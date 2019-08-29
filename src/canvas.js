@@ -1,0 +1,380 @@
+import { Shader } from "./shader.js";
+import { Mesh } from "./mesh.js";
+import { Transform } from "./transform.js";
+import { Bitmap } from "./bitmap.js";
+
+//
+// Canvas
+// (c) 2019 Jani Nykänen
+//
+
+
+// Shader sources
+const VERTEX_SRC = 
+`
+attribute vec2 v;
+attribute vec2 uvp;
+   
+uniform mat3 transform;
+
+uniform vec2 pos;
+uniform vec2 size;
+
+varying vec2 uv;
+   
+void main() {
+
+    vec3 op = transform * vec3(v * size + pos, 1);
+    gl_Position = vec4(op, 1);
+    uv = uvp;
+}`;
+
+// Fragment sources
+const FRAG_SRC_LEFT =
+`
+precision mediump float;
+ 
+uniform sampler2D t0;
+uniform vec4 color;
+
+uniform vec2 texPos;
+uniform vec2 texSize;
+
+varying vec2 uv;
+
+void main() {
+`;
+const FRAG_SRC_RIGHT_NO_TEX =
+`
+    gl_FragColor = color;
+}
+`;
+const FRAG_SRC_RIGHT_TEX =
+`      
+    const float DELTA = 0.001;
+    vec2 tex = uv;    
+    tex.x *= texSize.x;
+    tex.y *= texSize.y;
+    tex += texPos;
+    vec4 res = color * texture2D(t0, tex);
+    if(res.a <= DELTA) {
+        discard;
+    }
+    gl_FragColor = res;
+}
+`;
+
+
+//
+// Canvas class
+//
+export class Canvas extends Transform {
+
+
+    //
+    // Constructor
+    //
+    constructor() {
+        
+        super();
+
+        // Create an Html5 canvas and append it
+        // to a div
+
+        let cdiv = document.createElement("div");
+        cdiv.setAttribute("style", 
+            "position: absolute; top: 0; left: 0; z-index: -1");
+
+        this.canvas = document.createElement("canvas");
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+
+        this.canvas.setAttribute(
+            "style", 
+            "position: absolute; top: 0; left: 0; z-index: -1");
+        cdiv.appendChild(this.canvas);
+        document.body.appendChild(cdiv);
+
+        // Initialize GL
+        this.gl = null;
+        this.initGL();
+
+        // Build shaders
+        this.shaderNoTex= new Shader(this.gl, 
+            VERTEX_SRC,
+            FRAG_SRC_LEFT + FRAG_SRC_RIGHT_NO_TEX);
+        this.shaderTex = new Shader(this.gl, 
+            VERTEX_SRC,
+            FRAG_SRC_LEFT + FRAG_SRC_RIGHT_TEX);
+
+        this.activeShader = this.shaderTex;
+        this.activeShader.use();
+
+        // Generate font
+        this.genFont();
+
+        // Bound objects
+        this.boundMesh = null;
+        this.boundTex = null;
+
+        // Resize now
+        this.resize(window.innerWidth, 
+            window.innerHeight);
+    }
+
+
+    // 
+    // Initialize OpenGL
+    //
+    initGL() {
+
+        // Get OpenGL context
+        this.gl = this.canvas.getContext("webgl", {alpha:false});
+    
+        let gl = this.gl;
+        if (gl === null) {
+    
+            throw "Failed to initialize WebGL.";
+        }
+    
+        // Set OpenGL settings
+        gl.activeTexture(gl.TEXTURE0);
+        gl.disable(gl.DEPTH_TEST);
+        gl.enable( gl.BLEND );
+        gl.blendFuncSeparate(gl.SRC_ALPHA, 
+            gl.ONE_MINUS_SRC_ALPHA, gl.ONE, 
+            gl.ONE_MINUS_SRC_ALPHA);
+
+        // Enable attribute arrays
+        gl.enableVertexAttribArray(0);
+        gl.enableVertexAttribArray(1);
+        
+        // Create rectangle mesh
+        this.createRectMesh();
+    }
+
+
+    //
+    // Generate font texture
+    //
+    genFont() {
+        
+        // Create a canvas
+        let canvas = document.createElement("canvas");
+        canvas.width = 1024;
+        canvas.height = 1024;
+
+        // Draw characters to the canvas
+        let c = canvas.getContext("2d");
+        c.font = "32px sans-serif";
+        c.fillStyle = "#FFFFFF";
+        c.textAlign = "center";
+        let x, y;
+        for (let i = 0; i < 256; ++ i) {
+
+            x = i % 16;
+            y = (i / 16) | 0;
+            c.fillText(String.fromCharCode(i), x * 64 + 32, y * 64 + 32);
+        }
+
+        // Create texture from the canvas content
+        let gl = this.gl;
+        let t = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, t);
+
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+
+        // Bye bye canvas
+        canvas.remove();
+
+        // Create a font bitmap
+        this.bmpFont = new Bitmap(t, 1024, 1024);
+    }
+
+    //
+    // Create rectangle mesh
+    //
+    createRectMesh() {
+
+        let gl = this.gl;
+    
+        // Data for the rectangle mesh
+        const VERTICES = [
+            0.0, 0.0,
+            1.0, 0.0,
+            1.0, 1.0,
+            0.0, 1.0,
+        ];
+        const INDICES = [
+            0,1,2, 
+            2,3,0,
+        ]
+        const UVS = [
+            0.0, 0.0,
+            1.0, 0.0,
+            1.0, 1.0,
+            0.0, 1.0,
+        ];
+    
+        // Create rectangle mesh
+        this.mRect = new Mesh(
+            gl, VERTICES, UVS, INDICES
+        );
+    }
+
+
+    //
+    // Resize
+    // 
+    resize(w, h) {
+
+        this.canvas.width = w;
+        this.canvas.height = h;
+
+        // Set viewport
+        this.gl.viewport(0, 0, w, h);
+
+        // Store viewport size
+        this.w = this.canvas.width;
+        this.h = this.canvas.height;
+
+        // Store top-left corner position
+        this.top = -1.0;
+        this.left = -this.w / this.h;
+    }
+
+
+    //
+    // Clear screen with a color
+    //
+    clear(r, g, b) {
+
+        let gl = this.gl;
+
+        gl.clearColor(r, g, b, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+    }
+
+
+    //
+    // Draw a filled rectangle
+    //
+    fillRect(x, y, w, h, col) {
+
+        if (col != null) {
+            
+            this.activeShader.setColor(
+                col[0], col[1], col[2], col[3]);
+        }
+
+        this.drawMesh(this.mRect, null, 
+            x, y, w, h);
+    }
+
+
+    //
+    // Draw a scaled bitmap region
+    //
+    drawScaledBitmapRegion(bmp, sx, sy, sw, sh, dx, dy, dw, dh) {
+
+        this.activeShader.setVertexTransform(dx, dy, dw, dh);
+        this.activeShader.setFragTransform(
+            sx/bmp.w, sy/bmp.h, 
+            sw/bmp.w, sh/bmp.h);
+
+        this.drawMesh(this.mRect, bmp);
+    }
+
+
+    //
+    // Draw a scaled bitmap
+    //
+    drawScaledBitmap(bmp, dx, dy, dw, dh) {
+
+        this.drawScaledBitmapRegion(bmp, 
+                0, 0, bmp.w, bmp.h,
+                dx, dy, dw, dh);
+    }
+
+
+    //
+    // Draw scaled text
+    //
+    drawScaledText(str, dx, dy, xoff, yoff, sx, sy, center) {
+
+        let cw = this.bmpFont.w / 16;
+        let ch = cw;
+
+        let x = dx;
+        let y = dy;
+        let c;
+
+        // "Uniform scaling"
+        let usx = sx / 64;
+        let usy = sy / 64;
+
+        if (center) {
+
+            dx -= ((str.length + 1) / 2.0 * (cw + xoff) * sx);
+            x = dx;
+        }
+
+        for (let i = 0; i < str.length; ++ i) {
+
+            c = str.charCodeAt(i);
+            if (c == '\n'.charCodeAt(0)) {
+
+                x = dx;
+                y += (ch + yoff) * usy;
+                continue;
+            }
+
+            this.drawScaledBitmapRegion(
+                this.bmpFont, (c % 16) * cw, ((c/16)|0) * ch,
+                cw, ch, x, y, sx, sy
+            );
+
+            x += (cw + xoff) * usx;
+        }
+    }
+
+
+    //
+    // Draw a mesh
+    //
+    drawMesh(m, tex, x, y, sx, sy) {
+
+        let gl = this.gl;
+
+        if (x != null) {
+
+            this.activeShader.setVertexTransform(
+                x, y, sx, sy);
+        }
+
+        if (this.boundMesh != m) {
+
+            m.bind(gl);
+            this.boundMesh = m;
+        }
+
+        if (this.boundTex != tex) {
+
+            tex.bind(gl);
+        }
+
+        m.draw(gl);
+    }
+
+
+    //
+    // Set global rendering color
+    //
+    setColor(r, g, b, a) {
+
+        this.activeShader.setColor(r, g, b, a);
+    }
+}
