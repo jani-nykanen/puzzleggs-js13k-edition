@@ -38,7 +38,7 @@ export class Game {
 
         const VIEW_TARGET = 720.0;
 
-        c.clear(0.67, 0.67, 0.67);
+        c.clear(1, 1, 1);
 
         // No textures
         c.toggleTexturing(false);
