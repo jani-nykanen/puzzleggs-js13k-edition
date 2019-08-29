@@ -79,14 +79,15 @@ export class Stage {
         const BOTTOM = 3;
 
         const COLORS = [
-            [0.85, 0.85, 0.85],
-            [0.50, 0.50, 0.50], 
-            [0.67, 0.67, 0.67],
-            [0.33, 0.33, 0.33],
+            [0.90, 0.95, 1.00],
+            [0.60, 0.80, 1.00], 
+            
+            [0.05, 0.25, 0.60],
+            [0.15, 0.45, 0.80],
+            [0.33, 0.67, 1.00],
         ];
 
-        c.setColor();
-
+        
         let lw = this.tileW/5;
         let lh = this.tileH/5;
 
@@ -97,7 +98,8 @@ export class Stage {
             this.getTile(x, y+1) != 1, // Bottom
         ]
 
-        // Base color
+        // Base shape
+        c.setColor(...COLORS[4]);
         c.fillShape(Shape.Rect,
             x * this.tileW, y * this.tileH,
             this.tileW, this.tileH);
@@ -217,34 +219,92 @@ export class Stage {
     drawFloorPiece(c, x, y) {
 
         const OUTLINE = 4;
+        const SHADOW_ALPHA = 0.25;
+        const SHADOW_LENGTH = 0.25;
 
-        /*
-        if (x % 2 == y % 2) {
+        // For laziness
+        let w = this.tileW;
+        let h = this.tileH;
 
-            c.setColor(0.67, 0.67, 0.67);
-        }
-        else {
-
-            c.setColor(0.75, 0.75, 0.75);
-        }
-        */
-        c.setColor(0.8, 0.8, 1.0);
-        c.fillShape(Shape.Rect,
-            x * this.tileW, y * this.tileH,
-            this.tileW, this.tileH);
-
-        // Draw outline
-
+        // Empty tiles
         let empty = [
             this.getTile(x-1, y) != 1, // Left,
             this.getTile(x, y-1) != 1, // Top
             this.getTile(x+1, y) != 1, // Right,
             this.getTile(x, y+1) != 1, // Bottom
-        ]
+        ];
 
-        let w = this.tileW;
-        let h = this.tileH;
+        // Draw base tiles
+        if (x % 2 == y % 2) {
 
+            c.setColor(0.90, 0.75, 0.50);
+        }
+        else {
+
+            c.setColor(0.80, 0.55, 0.30);
+        }
+        c.fillShape(Shape.Rect,
+            x * this.tileW, y * this.tileH,
+            this.tileW, this.tileH);
+
+
+        //
+        // Draw shadows
+        //
+        c.setColor(0, 0, 0, SHADOW_ALPHA);
+        let corner = this.getTile(x-1, y-1) == 1;
+        let d = SHADOW_LENGTH;
+        let md = 1.0 - SHADOW_LENGTH;
+        // Left not empty
+        if (!empty[0]) {
+
+            // Bottom shape
+            c.fillShape(Shape.Rect,
+                x * this.tileW, (y + d) * this.tileH,
+                this.tileW * d, this.tileH * md);
+
+            // Upper shape
+            c.fillShape( 
+                (empty[1] && !corner) ? 
+                    Shape.RAngledTriangle : Shape.Rect,
+                x * this.tileW, y * this.tileH,
+                this.tileW * d, this.tileH * d);
+
+            // Top not empty
+            if (!empty[1]) {
+
+                c.fillShape(Shape.Rect,
+                    (x + d) * this.tileW, y * this.tileH,
+                    this.tileW * md, this.tileH * d);
+            }
+        }
+        // Top not empty
+        else if(!empty[1]) {
+
+            // Left shape
+            c.fillShape(
+                (empty[0] && !corner) ? 
+                    Shape.RAngledTriangle : Shape.Rect,
+                x * this.tileW, y * this.tileH,
+                -this.tileW * d, -this.tileH * d);
+
+            // Right shape
+            c.fillShape(Shape.Rect,
+                (x+d) * this.tileW, y * this.tileH,
+                this.tileW * md, this.tileH * d);
+        }
+        // Corner
+        else if (corner) {
+
+            c.fillShape(Shape.Rect,
+                x * this.tileW, y * this.tileH,
+                this.tileW * d, this.tileH * d);
+        }
+
+
+        //
+        // Draw outlines
+        //
         c.setColor(0, 0, 0);
         // Left
         if (!empty[0]) {

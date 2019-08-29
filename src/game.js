@@ -38,7 +38,7 @@ export class Game {
 
         const VIEW_TARGET = 720.0;
 
-        c.clear(1, 1, 1);
+        c.clear(0.33, 0.67, 1.00);
 
         // No textures
         c.toggleTexturing(false);
@@ -61,14 +61,9 @@ export class Game {
 
         // Version info
         c.toggleTexturing(true);
-        c.setColor(0, 0, 0, 1);
-        for (let j = 0; j < 2; ++j)
-            c.drawScaledText(fps, 
-                2+j, 2+j, -40, 0, 
-                64, 64, false);
         c.setColor(1, 1, 0);
         c.drawScaledText(fps, 
-            0, 0, -40, 0, 
-            64, 64, false);
+            0, 0, -20, 0, 
+            48, 48, false);
     }
 }

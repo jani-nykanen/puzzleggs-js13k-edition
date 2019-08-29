@@ -187,7 +187,9 @@ export class Canvas extends Transform {
     // Generate font texture
     //
     genFont() {
-        
+
+        const OUTLINE = 3;
+
         // Create a canvas
         let canvas = document.createElement("canvas");
         canvas.width = 1024;
@@ -195,18 +197,36 @@ export class Canvas extends Transform {
 
         // Draw characters to the canvas
         let c = canvas.getContext("2d");
-        c.font = "32px sans-serif";
-        c.fillStyle = "#FFFFFF";
+        c.font = "56px sans-serif";
+        
         c.textAlign = "center";
         let x, y;
         for (let i = 0; i < 256; ++ i) {
 
             x = i % 16;
             y = (i / 16) | 0;
-            for (let j = -1; j <= 1; ++ j) {
+
+            // Black background
+            c.fillStyle = "#000000";
+            for (let m = -1; m <= 1; ++ m) {
+
+                for (let n = -1; n <= 1; ++ n) {
+
+                    if (m == n && m == 0) continue;
+                    for (let j = -2; j <= 2; ++ j) {
+
+                        c.fillText(String.fromCharCode(i), 
+                            x * 64 + 32 + j + m*OUTLINE, y * 64 + 48 + n*OUTLINE);
+                    }
+                }
+            }
+
+            // Base color
+            c.fillStyle = "#FFFFFF";
+            for (let j = -2; j <= 2; ++ j) {
 
                 c.fillText(String.fromCharCode(i), 
-                    x * 64 + 32 + j, y * 64 + 32);
+                    x * 64 + 32 + j, y * 64 + 48);
             }
         }
 
