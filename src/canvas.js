@@ -2,6 +2,8 @@ import { Shader } from "./shader.js";
 import { Mesh } from "./mesh.js";
 import { Transform } from "./transform.js";
 import { Bitmap } from "./bitmap.js";
+import { ShapeGen } from "./shapegen.js";
+import { clamp } from "./util.js";
 
 //
 // Canvas
@@ -66,6 +68,18 @@ const FRAG_SRC_RIGHT_TEX =
 
 
 //
+// Shape enums
+//
+export const Shape = {
+    
+    Rect: 0,
+    RAngledTriangle: 1,
+    EquilTriangle: 2,
+    Ellipse: 3
+};
+
+
+//
 // Canvas class
 //
 export class Canvas extends Transform {
@@ -77,6 +91,9 @@ export class Canvas extends Transform {
     constructor() {
         
         super();
+
+        // Circle "precision"
+        const CIRCLE_PREC = 32;
 
         // Create an Html5 canvas and append it
         // to a div
@@ -98,6 +115,18 @@ export class Canvas extends Transform {
         // Initialize GL
         this.gl = null;
         this.initGL();
+
+        // Create meshes
+        let sgen = new ShapeGen(this.gl);
+        this.mRect = sgen.rect();
+        this.mRAngledTriangle = sgen.rightAngledTriangle();
+        this.mEquilTriangle = sgen.regPoly(3);
+        this.mEllipse = sgen.regPoly(CIRCLE_PREC);
+        // Array for shapes
+        this.shapes = [
+            this.mRect, this.mRAngledTriangle,
+            this.mEquilTriangle, this.mEllipse
+        ];
 
         // Build shaders
         this.shaderNoTex= new Shader(this.gl, 
@@ -260,9 +289,9 @@ export class Canvas extends Transform {
 
 
     //
-    // Draw a filled rectangle
+    // Draw a filled shape
     //
-    fillRect(x, y, w, h, col) {
+    fillShape(shape, x, y, w, h, col) {
 
         if (col != null) {
             
@@ -270,7 +299,21 @@ export class Canvas extends Transform {
                 col[0], col[1], col[2], col[3]);
         }
 
-        this.drawMesh(this.mRect, null, 
+        // Check if need for flip
+        if (w < 0) {
+
+            x -= w;
+        }
+        if (h < 0) {
+
+            y -= h;
+        }
+
+        // Determine shape
+        let m = this.shapes[ clamp(shape | 0, 0, this.shapes.length-1) ];
+
+        // Draw mesh to the screen
+        this.drawMesh(m, null, 
             x, y, w, h);
     }
 
@@ -375,6 +418,23 @@ export class Canvas extends Transform {
     //
     setColor(r, g, b, a) {
 
+        if (a == null)
+            a = 1;
+
         this.activeShader.setColor(r, g, b, a);
+    }
+
+
+    //
+    // Toggle texturing
+    //
+    toggleTexturing(state) {
+
+        this.activeShader = 
+            state ? this.shaderTex : this.shaderNoTex;
+
+        this.activeShader.use();
+        this.setColor(1, 1, 1, 1);
+        this.useTransform();
     }
 }
