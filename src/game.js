@@ -1,4 +1,5 @@
 import { Shape } from "./canvas.js";
+import { Stage } from "./stage.js";
 
 //
 // Game scene
@@ -13,7 +14,9 @@ export class Game {
     // 
     constructor(gl) {
 
+        this.stage = new Stage(1);
 
+        this.frameSkip = 0;
     }
 
 
@@ -23,6 +26,8 @@ export class Game {
     update(ev) {
 
         // ...
+
+        this.frameSkip += ev.step;
     }
 
 
@@ -35,23 +40,35 @@ export class Game {
 
         c.clear(0.67, 0.67, 0.67);
 
+        // No textures
+        c.toggleTexturing(false);
+
+        // Set stage transform
+        this.stage.setStageView(c);
+
+        // Draw stage
+        this.stage.drawTiles(c);
+
+        // Reset view
         c.loadIdentity();
         c.setWorldTransform();
         c.fitViewToDimension(c.w, c.h, VIEW_TARGET);
         c.useTransform();
 
-        // Funky shapes
-        c.toggleTexturing(false);
-        c.setColor(1, 0, 0);
-        c.fillShape(Shape.Ellipse, 128, 128, 64, 64);
-
-        c.fillShape(Shape.RAngledTriangle, 0, 0, 32, -32);
+        // Compute FPS
+        let fps = "FPS: " + String( (60.0 / this.frameSkip) | 0);
+        this.frameSkip = 0;
 
         // Version info
         c.toggleTexturing(true);
         c.setColor(0, 0, 0, 1);
-        c.drawScaledText("Pre-Alpha 0.0.1", 
-            0, 0, -32, 0, 
+        for (let j = 0; j < 2; ++j)
+            c.drawScaledText(fps, 
+                2+j, 2+j, -40, 0, 
+                64, 64, false);
+        c.setColor(1, 1, 0);
+        c.drawScaledText(fps, 
+            0, 0, -40, 0, 
             64, 64, false);
     }
 }

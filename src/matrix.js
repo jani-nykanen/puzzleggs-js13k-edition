@@ -76,8 +76,8 @@ export class Matrix3 {
     translate(x, y) {
 
         this.identity();
-        this.m[3] = x;
-        this.m[3 + 3] = y;
+        this.m[2] = x;
+        this.m[3 + 2] = y;
     }
 
 

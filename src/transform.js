@@ -66,15 +66,18 @@ export class Transform {
         this.productComputed = false;
 
         if (x == null) return;
-        if (angle == null) angleZ = 0;
 
         // Set world transforms in
         // "TRS" order (should be correct?)
         this.world.translate(x, y);
-        this.op.rotate(angle);
-        this.world = this.world.multiply(this.op);
-        this.op.scale(sx, sy);
-        this.world = this.world.multiply(this.op);
+        if (angle != null) {
+            this.op.rotate(angle);
+            this.world = this.world.multiply(this.op);
+        }
+        if (sx != null && sy != null) {
+            this.op.scale(sx, sy);
+            this.world = this.world.multiply(this.op);
+        }
     }
 
 
@@ -87,6 +90,8 @@ export class Transform {
 
         this.viewport.x = w;
         this.viewport.y = h;
+
+        this.productComputed = false;
     }
 
 

@@ -203,7 +203,11 @@ export class Canvas extends Transform {
 
             x = i % 16;
             y = (i / 16) | 0;
-            c.fillText(String.fromCharCode(i), x * 64 + 32, y * 64 + 32);
+            for (let j = -1; j <= 1; ++ j) {
+
+                c.fillText(String.fromCharCode(i), 
+                    x * 64 + 32 + j, y * 64 + 32);
+            }
         }
 
         // Create texture from the canvas content
@@ -418,8 +422,10 @@ export class Canvas extends Transform {
     //
     setColor(r, g, b, a) {
 
-        if (a == null)
-            a = 1;
+        if (r == null) r = 1;
+        if (g == null) g = 1;
+        if (b == null) b = 1;
+        if (a == null) a = 1;
 
         this.activeShader.setColor(r, g, b, a);
     }
