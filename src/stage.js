@@ -7,13 +7,20 @@ import { Shape } from "./canvas.js";
 //
 
 
+// Tile dimensions
+export const Tile = {Width: 64, Height: 64};
+
+
+//
+// Stage class
+//
 export class Stage {
 
 
     //
     // Constructor
     //
-    constructor(id) {
+    constructor(id, o) {
 
         let src = MapData[id -1];
 
@@ -33,9 +40,8 @@ export class Stage {
         this.w = src.w;
         this.h = src.h;
 
-        // Tile dimensions (could be any, really)
-        this.tileW = 64;
-        this.tileH = 64;
+        // Parse objects
+        this.parseObjects(o);
     }
 
 
@@ -51,16 +57,40 @@ export class Stage {
 
 
     //
+    // Parse objects
+    //
+    parseObjects(o) {
+        
+        let t;
+        for (let y = 0; y < this.h; ++ y) {
+
+            for (let x = 0; x < this.w; ++ x) {
+
+                t = this.getTile(x, y);
+
+                switch(t) {
+
+                // Player
+                case 2:
+                    o.createPlayer(x, y);
+                    break;
+                }
+            }
+        }
+    }
+
+
+    //
     // Set stage view
     //
     setStageView(c) {
 
         // Fit view
         c.fitViewToDimension(c.w, c.h, 
-            this.tileH * this.h);
+            Tile.Height * this.h);
 
         // Center
-        let tx = c.viewport.x / 2 - this.w*this.tileW/2;
+        let tx = c.viewport.x / 2 - this.w*Tile.Width/2;
         let ty = 0;
 
         c.setWorldTransform(tx, ty);
@@ -88,8 +118,8 @@ export class Stage {
         ];
 
         
-        let lw = this.tileW/5;
-        let lh = this.tileH/5;
+        let lw = Tile.Width/5;
+        let lh = Tile.Height/5;
 
         let empty = [
             this.getTile(x-1, y) != 1, // Left,
@@ -101,34 +131,34 @@ export class Stage {
         // Base shape
         c.setColor(...COLORS[4]);
         c.fillShape(Shape.Rect,
-            x * this.tileW, y * this.tileH,
-            this.tileW, this.tileH);
+            x * Tile.Width, y * Tile.Height,
+            Tile.Width, Tile.Height);
 
         // Right empty
         if (empty[RIGHT]) {
 
             c.setColor(...COLORS[RIGHT]);
             c.fillShape(Shape.Rect,
-                x * this.tileW + (this.tileW-lw), 
-                y * this.tileH,
-                lw, this.tileH);
+                x * Tile.Width + (Tile.Width-lw), 
+                y * Tile.Height,
+                lw, Tile.Height);
         }
         // Bottom empty
         if (empty[BOTTOM]) {
 
             c.setColor(...COLORS[BOTTOM]);
             c.fillShape(Shape.Rect,
-                x * this.tileW , 
-                y * this.tileH + (this.tileH-lh),
-                this.tileW, lh);
+                x * Tile.Width , 
+                y * Tile.Height + (Tile.Height-lh),
+                Tile.Width, lh);
 
             // Right empty
             if (empty[RIGHT]) {
 
                 c.setColor(...COLORS[RIGHT]);
                 c.fillShape(Shape.RAngledTriangle,
-                    x * this.tileW + (this.tileW-lw), 
-                    y * this.tileH + (this.tileH-lh),
+                    x * Tile.Width + (Tile.Width-lw), 
+                    y * Tile.Height + (Tile.Height-lh),
                     -lw, -lh);
             }
         }
@@ -137,17 +167,17 @@ export class Stage {
 
             c.setColor(...COLORS[LEFT]);
             c.fillShape(Shape.Rect,
-                x * this.tileW, 
-                y * this.tileH,
-                lw, this.tileH);
+                x * Tile.Width, 
+                y * Tile.Height,
+                lw, Tile.Height);
 
             // Bottom empty
             if (empty[BOTTOM]) {
 
                 c.setColor(...COLORS[BOTTOM]);
                 c.fillShape(Shape.RAngledTriangle,
-                    x * this.tileW, 
-                    y * this.tileH + (this.tileH-lh),
+                    x * Tile.Width, 
+                    y * Tile.Height + (Tile.Height-lh),
                     -lw, lh);
             }
         }
@@ -156,17 +186,17 @@ export class Stage {
 
             c.setColor(...COLORS[TOP]);
             c.fillShape(Shape.Rect,
-                x * this.tileW , 
-                y * this.tileH,
-                this.tileW, lh);
+                x * Tile.Width , 
+                y * Tile.Height,
+                Tile.Width, lh);
 
             // Left empty
             if (empty[LEFT]) {
 
                 c.setColor(...COLORS[LEFT]);
                 c.fillShape(Shape.RAngledTriangle,
-                    x * this.tileW , 
-                    y * this.tileH,
+                    x * Tile.Width , 
+                    y * Tile.Height,
                     lw, lh);
             }
             // Right empty
@@ -174,8 +204,8 @@ export class Stage {
 
                 c.setColor(...COLORS[RIGHT]);
                 c.fillShape(Shape.RAngledTriangle,
-                    x * this.tileW + (this.tileW-lw), 
-                    y * this.tileH,
+                    x * Tile.Width + (Tile.Width-lw), 
+                    y * Tile.Height,
                     -lw, lh);
             }
         }
@@ -198,14 +228,14 @@ export class Stage {
 
                 c.setColor(...COLORS[i]);
                 c.fillShape(Shape.RAngledTriangle,
-                    x * this.tileW + (this.tileW-lw) * k, 
-                    y * this.tileH + (this.tileH-lh) * m,
+                    x * Tile.Width + (Tile.Width-lw) * k, 
+                    y * Tile.Height + (Tile.Height-lh) * m,
                     lw * FX[i], lh * FY[i]);
 
                 c.setColor(...COLORS[(i+1) % 4]);
                 c.fillShape(Shape.RAngledTriangle,
-                    x * this.tileW + (this.tileW-lw) * k, 
-                    y * this.tileH + (this.tileH-lh) * m,
+                    x * Tile.Width + (Tile.Width-lw) * k, 
+                    y * Tile.Height + (Tile.Height-lh) * m,
                     -lw * FX[i], -lh * FY[i]);    
             }
         }
@@ -218,13 +248,13 @@ export class Stage {
     //
     drawFloorPiece(c, x, y) {
 
-        const OUTLINE = 4;
+        const OUTLINE = 2;
         const SHADOW_ALPHA = 0.25;
         const SHADOW_LENGTH = 0.25;
 
         // For laziness
-        let w = this.tileW;
-        let h = this.tileH;
+        let w = Tile.Width;
+        let h = Tile.Height;
 
         // Empty tiles
         let empty = [
@@ -244,8 +274,8 @@ export class Stage {
             c.setColor(0.80, 0.55, 0.30);
         }
         c.fillShape(Shape.Rect,
-            x * this.tileW, y * this.tileH,
-            this.tileW, this.tileH);
+            x * Tile.Width, y * Tile.Height,
+            Tile.Width, Tile.Height);
 
 
         //
@@ -260,22 +290,22 @@ export class Stage {
 
             // Bottom shape
             c.fillShape(Shape.Rect,
-                x * this.tileW, (y + d) * this.tileH,
-                this.tileW * d, this.tileH * md);
+                x * Tile.Width, (y + d) * Tile.Height,
+                Tile.Width * d, Tile.Height * md);
 
             // Upper shape
             c.fillShape( 
                 (empty[1] && !corner) ? 
                     Shape.RAngledTriangle : Shape.Rect,
-                x * this.tileW, y * this.tileH,
-                this.tileW * d, this.tileH * d);
+                x * Tile.Width, y * Tile.Height,
+                Tile.Width * d, Tile.Height * d);
 
             // Top not empty
             if (!empty[1]) {
 
                 c.fillShape(Shape.Rect,
-                    (x + d) * this.tileW, y * this.tileH,
-                    this.tileW * md, this.tileH * d);
+                    (x + d) * Tile.Width, y * Tile.Height,
+                    Tile.Width * md, Tile.Height * d);
             }
         }
         // Top not empty
@@ -285,20 +315,20 @@ export class Stage {
             c.fillShape(
                 (empty[0] && !corner) ? 
                     Shape.RAngledTriangle : Shape.Rect,
-                x * this.tileW, y * this.tileH,
-                -this.tileW * d, -this.tileH * d);
+                x * Tile.Width, y * Tile.Height,
+                -Tile.Width * d, -Tile.Height * d);
 
             // Right shape
             c.fillShape(Shape.Rect,
-                (x+d) * this.tileW, y * this.tileH,
-                this.tileW * md, this.tileH * d);
+                (x+d) * Tile.Width, y * Tile.Height,
+                Tile.Width * md, Tile.Height * d);
         }
         // Corner
         else if (corner) {
 
             c.fillShape(Shape.Rect,
-                x * this.tileW, y * this.tileH,
-                this.tileW * d, this.tileH * d);
+                x * Tile.Width, y * Tile.Height,
+                Tile.Width * d, Tile.Height * d);
         }
 
 
@@ -309,26 +339,26 @@ export class Stage {
         // Left
         if (!empty[0]) {
 
-            c.fillShape(Shape.Rect, x*this.tileW, y*this.tileH,
+            c.fillShape(Shape.Rect, x*Tile.Width, y*Tile.Height,
                 OUTLINE, h);
         }
         // Top
         if (!empty[1]) {
 
-            c.fillShape(Shape.Rect, x*this.tileW, y*this.tileH,
+            c.fillShape(Shape.Rect, x*Tile.Width, y*Tile.Height,
                 w, OUTLINE);
         }
         // Right
         if (!empty[2]) {
 
-            c.fillShape(Shape.Rect, (x+1)*this.tileW-OUTLINE, y*this.tileH,
+            c.fillShape(Shape.Rect, (x+1)*Tile.Width-OUTLINE, y*Tile.Height,
                 OUTLINE, h);
         }
         // Bottom
         if (!empty[3]) {
 
             c.fillShape(Shape.Rect, 
-                x*this.tileW, (y+1)*this.tileH-OUTLINE,
+                x*Tile.Width, (y+1)*Tile.Height-OUTLINE,
                 w, OUTLINE);
         }
 

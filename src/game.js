@@ -1,5 +1,6 @@
 import { Shape } from "./canvas.js";
 import { Stage } from "./stage.js";
+import { ObjectManager } from "./objects.js";
 
 //
 // Game scene
@@ -16,17 +17,22 @@ const BG_COLOR = [0.33, 0.67, 1.00];
 //
 export class Game {
 
+
     //
     // Constructor
     // 
     constructor(gl) {
 
-        this.stage = new Stage(1);
-
-        this.frameSkip = 0;
+        // Create an object manager
+        this.objMan = new ObjectManager();
+        // Create a stage
+        this.stage = new Stage(1, this.objMan);
 
         // Cog angle
         this.cogAngle = 0.0;
+
+        // Temp
+        this.frameSkip = 0;
     }
 
 
@@ -36,6 +42,9 @@ export class Game {
     update(ev) {
 
         const COG_SPEED = 0.025;
+
+        // Update objects
+        this.objMan.update(this.stage, ev);
 
         // Update cog angle
         this.cogAngle = (this.cogAngle + COG_SPEED * ev.step) 
@@ -132,6 +141,9 @@ export class Game {
 
         // Draw stage
         this.stage.drawTiles(c);
+
+        // Draw game objects
+        this.objMan.draw(c);
 
         // Reset view
         c.loadIdentity();

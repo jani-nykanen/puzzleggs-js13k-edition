@@ -125,4 +125,24 @@ export class ShapeGen {
             [0,1,2]
         );
     }
+
+
+    //
+    // Generate a equilateral triangle
+    //
+    equilTriangle() {
+
+        return new Mesh(
+            this.gl, 
+            [0.0, -1.0,
+            0.71, 0.71,
+            -0.71, 0.71], 
+
+            [0.0, 0.0,
+            1.0, 1.0,
+            0.0, 1.0], 
+
+            [0,1,2]
+        );
+    }
 }

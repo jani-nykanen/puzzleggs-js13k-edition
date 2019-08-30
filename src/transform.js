@@ -154,7 +154,15 @@ export class Transform {
     //
     push() {
 
+        const STACK_MAX = 64;
+
         this.stack.push(this.model.clone());
+
+        // To avoid stack overflows, memory leaks etc.
+        if (this.stack.length >= STACK_MAX) {
+
+            throw "Stack overflow!";
+        }
     }
 
 

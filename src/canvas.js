@@ -156,7 +156,7 @@ export class Canvas extends Transform {
 
             sgen.rect(), // Rectangle
             sgen.rightAngledTriangle(), // Right-angled triangle
-            sgen.regPoly(3), // Equilateral triangle
+            sgen.equilTriangle(), // Equilateral triangle
             sgen.regPoly(CIRCLE_PREC), // Ellipse
             sgen.regPoly(CIRCLE_PREC, null, COG_TOOTH_WAIT, COG_TOOTH, 0.33), // Cog
         ];
