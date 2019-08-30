@@ -25,10 +25,7 @@ export const Action = {
     Right: 39,
     Down: 40,
 
-    Run: 16,
-    Shoot: 17,
-    Activate: 32,
-
+    Reset: 82,
     Start: 13
 };
 

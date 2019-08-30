@@ -57,6 +57,17 @@ export class Stage {
 
 
     //
+    // Is a tile solid
+    //
+    isSolid(x, y) {
+
+        const SOLID = [1];
+
+        return SOLID.includes(this.getTile(x, y));
+    }
+
+
+    //
     // Parse objects
     //
     parseObjects(o) {
