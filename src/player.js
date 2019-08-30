@@ -9,8 +9,8 @@ import { State, Action } from "./input.js";
 //
 
 
-// Local constants
-const MOVE_TIME = 30;
+// Move time
+export const MOVE_TIME = 30;
 
 
 //

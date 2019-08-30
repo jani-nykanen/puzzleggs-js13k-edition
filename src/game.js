@@ -1,6 +1,7 @@
 import { Shape } from "./canvas.js";
-import { Stage } from "./stage.js";
+import { Stage, Tile } from "./stage.js";
 import { ObjectManager } from "./objects.js";
+import { MOVE_TIME } from "./player.js";
 
 //
 // Game scene
@@ -30,6 +31,8 @@ export class Game {
 
         // Cog angle
         this.cogAngle = 0.0;
+        // Floating text value
+        this.textFloatValue = 0.0;
 
         // Temp
         this.frameSkip = 0;
@@ -41,16 +44,27 @@ export class Game {
     //
     update(ev) {
 
-        const COG_SPEED = 0.025;
+        const COG_SPEED = Math.PI/2.0 / MOVE_TIME;
+        const FLOAT_SPEED = 0.05;
 
         // Update objects
         this.objMan.update(this.stage, ev);
 
-        // Update cog angle
-        this.cogAngle = (this.cogAngle + COG_SPEED * ev.step) 
-            % (Math.PI / 2);
-        
+        if (this.objMan.isActive()) {
 
+            // Update cog angle
+            this.cogAngle = (this.cogAngle + COG_SPEED * ev.step) 
+                % (Math.PI / 2);
+        }
+        else {
+
+            this.cogAngle = 0;
+        }
+
+        // Update floating text
+        this.textFloatValue += FLOAT_SPEED * ev.step;
+
+        // TEMP
         this.frameSkip += ev.step;
     }
 
@@ -125,6 +139,54 @@ export class Game {
 
 
     //
+    // Draw stage info
+    //
+    drawStageInfo(c) {
+
+        const TEXT = ["STAGE 1", "Password: NONE"];
+
+        const POS_Y = 4;
+
+        const FONT_SIZE = [64, 48];
+        const AMPLITUDE = [6.0, 4.0];
+        const PERIOD = [Math.PI/3, Math.PI/6];
+
+        const SHADOW_ALPHA = 0.25;
+        const SHADOW_X = [6, 4];
+        const SHADOW_Y = [6, 4];
+
+        c.toggleTexturing(true);
+
+        // Draw stage text
+        let y;
+        for (let j = 0; j < 2; ++ j) {
+
+            for (let i = 1; i >= 0; -- i) {
+
+                if (j == 0)
+                    y = POS_Y + Tile.Height/2;
+                else
+                    y = c.viewport.y - POS_Y - Tile.Height/2;
+                y -= FONT_SIZE[j]/2 - i *SHADOW_Y[j];
+
+                if (i == 1)
+                    c.setColor(0, 0, 0, SHADOW_ALPHA);
+                else
+                    c.setColor(1, 1, 0.5);
+
+                c.drawScaledText(TEXT[j], 
+                    c.viewport.x/2 + i*SHADOW_X[j], y,
+                    -16, 0, 
+                    FONT_SIZE[j], FONT_SIZE[j], true, 
+                    PERIOD[j], AMPLITUDE[j],
+                    this.textFloatValue);
+
+            }
+    }
+    }
+
+
+    //
     // Draw the game scene
     //
     draw(c) {
@@ -155,14 +217,19 @@ export class Game {
         this.drawCogs(c);
 
         // Compute FPS
+        /*
         let fps = "FPS: " + String( (60.0 / this.frameSkip) | 0);
         this.frameSkip = 0;
 
-        // Version info
+        // Draw FPS
         c.toggleTexturing(true);
         c.setColor(1, 1, 0);
         c.drawScaledText(fps, 
             c.viewport.x/2, 0, -20, 0, 
             48, 48, true);
+        */
+
+        // Draw stage info
+        this.drawStageInfo(c);
     }
 }

@@ -54,4 +54,13 @@ export class ObjectManager {
         }
     }
 
+
+    //
+    // Is something moving etc
+    //
+    isActive() {
+
+        return this.player.moving;
+    }
+
 }

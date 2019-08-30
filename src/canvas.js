@@ -197,6 +197,8 @@ export class Canvas extends Transform {
     genFont() {
 
         const OUTLINE = 3;
+        const START = 33;
+        const END = 123;
 
         // Create a canvas
         let canvas = document.createElement("canvas");
@@ -209,22 +211,24 @@ export class Canvas extends Transform {
         
         c.textAlign = "center";
         let x, y;
-        for (let i = 0; i < 256; ++ i) {
+        
+        for (let i = START; i < END; ++ i) {
 
             x = i % 16;
             y = (i / 16) | 0;
 
             // Black background
             c.fillStyle = "#000000";
-            for (let m = -1; m <= 1; ++ m) {
 
-                for (let n = -1; n <= 1; ++ n) {
+            for (let m = -OUTLINE; m <= OUTLINE; ++ m) {
+
+                for (let n = -OUTLINE; n <= OUTLINE; ++ n) {
 
                     if (m == n && m == 0) continue;
                     for (let j = -2; j <= 2; ++ j) {
 
                         c.fillText(String.fromCharCode(i), 
-                            x * 64 + 32 + j + m*OUTLINE, y * 64 + 48 + n*OUTLINE);
+                            x * 64 + 32 + j + m, y * 64 + 48 + n);
                     }
                 }
             }
@@ -347,7 +351,7 @@ export class Canvas extends Transform {
     //
     // Draw scaled text
     //
-    drawScaledText(str, dx, dy, xoff, yoff, sx, sy, center) {
+    drawScaledText(str, dx, dy, xoff, yoff, sx, sy, center, period, amplitude, start) {
 
         let cw = this.bmpFont.w / 16;
         let ch = cw;
@@ -366,6 +370,8 @@ export class Canvas extends Transform {
             x = dx;
         }
 
+        let jump = 0;   
+        // Draw every character
         for (let i = 0; i < str.length; ++ i) {
 
             c = str.charCodeAt(i);
@@ -376,9 +382,15 @@ export class Canvas extends Transform {
                 continue;
             }
 
+            // Make it float
+            if (period != null) {
+
+                jump = Math.sin(start + i * period) * amplitude;
+            }
+            // Draw current character
             this.drawScaledBitmapRegion(
                 this.bmpFont, (c % 16) * cw, ((c/16)|0) * ch,
-                cw, ch, x, y, sx, sy
+                cw, ch, x, y + jump, sx, sy
             );
 
             x += (cw + xoff) * usx;
