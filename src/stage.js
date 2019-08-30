@@ -259,7 +259,7 @@ export class Stage {
     //
     drawFloorPiece(c, x, y) {
 
-        const OUTLINE = 2;
+        const OUTLINE = 3.0;
         const SHADOW_ALPHA = 0.25;
         const SHADOW_LENGTH = 0.25;
 
@@ -296,20 +296,31 @@ export class Stage {
         let corner = this.getTile(x-1, y-1) == 1;
         let d = SHADOW_LENGTH;
         let md = 1.0 - SHADOW_LENGTH;
+
+        let b = 0.0;
+        let s = Shape.Rect;
+
+        let sw = Tile.Width;
+        let sh = Tile.Height;
+
         // Left not empty
         if (!empty[0]) {
 
+            if (empty[1] && !corner) {
+
+                s = Shape.RAngledTriangle;
+                b = OUTLINE;
+            }
+
             // Bottom shape
             c.fillShape(Shape.Rect,
-                x * Tile.Width, (y + d) * Tile.Height,
-                Tile.Width * d, Tile.Height * md);
+                OUTLINE + x * sw, (y + d) * Tile.Height - b,
+                sw * d - OUTLINE, Tile.Height * md + b);
 
             // Upper shape
-            c.fillShape( 
-                (empty[1] && !corner) ? 
-                    Shape.RAngledTriangle : Shape.Rect,
-                x * Tile.Width, y * Tile.Height,
-                Tile.Width * d, Tile.Height * d);
+            c.fillShape(s,
+                OUTLINE + x * sw, y * Tile.Height - b,
+                sw* d - OUTLINE, Tile.Height * d);
 
             // Top not empty
             if (!empty[1]) {
@@ -322,24 +333,30 @@ export class Stage {
         // Top not empty
         else if(!empty[1]) {
 
+            if (empty[0] && !corner) {
+
+                s = Shape.RAngledTriangle;
+                b = OUTLINE;
+            }
+
             // Left shape
             c.fillShape(
                 (empty[0] && !corner) ? 
                     Shape.RAngledTriangle : Shape.Rect,
-                x * Tile.Width, y * Tile.Height,
-                -Tile.Width * d, -Tile.Height * d);
+                x * Tile.Width - b, OUTLINE + y * Tile.Height,
+                -Tile.Width * d, -sh * d + OUTLINE);
 
             // Right shape
             c.fillShape(Shape.Rect,
-                (x+d) * Tile.Width, y * Tile.Height,
-                Tile.Width * md, Tile.Height * d);
+                (x+d) * Tile.Width - b, OUTLINE + y * Tile.Height,
+                Tile.Width * md + b, sh * d - OUTLINE);
         }
         // Corner
         else if (corner) {
 
             c.fillShape(Shape.Rect,
                 x * Tile.Width, y * Tile.Height,
-                Tile.Width * d, Tile.Height * d);
+                sw * d, sh * d);
         }
 
 

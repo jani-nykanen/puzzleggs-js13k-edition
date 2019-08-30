@@ -156,16 +156,26 @@ export class Player {
         const HEAD_W = 48;
         const HEAD_H = 40;
         const HEAD_Y = -12;
+        const HEAD_ANGLE = Math.PI / 16.0;
 
         const LEG_OUTLINE = 2;
         const LEG_COLOR = [0.67, 0.40, 0.1];
         const LEG_OFF = 10;
         const LEG_HEIGHT = 10;
+        const LEG_WIDTH = 16;
 
         const BOX_OUTLINE = 3;
         const BOX_COLOR = [0.90, 0.90, 0.90]
 
         const BEAK_COLOR = [ [1.0, 0.7, 0.0], [0.8, 0.4, 0] ];
+        const BEAK_SIZE = 16;
+
+        const EYE_RADIUS = 10;
+        const EYE_LIGHT_RADIUS = 3;
+        const EYE_X = 12;
+        const EYE_Y = -6;
+        const EYE_LIGHT_X = 2;
+        const EYE_LIGHT_Y = 2;
 
         const SHADOW_WIDTH = 48;
         const SHADOW_HEIGHT = 16;
@@ -195,13 +205,15 @@ export class Player {
             // Leg outline
             c.setColor(0.0, 0.0, 0.0);
             c.fillShape(Shape.EquilTriangle,
-                mx + 10*i - LEG_OUTLINE/2 +1, legY + legYMod*i,
-                16 + LEG_OUTLINE*2, -LEG_HEIGHT - LEG_OUTLINE);
+                mx + LEG_OFF*i - LEG_OUTLINE/2 +1, legY + legYMod*i,
+                LEG_WIDTH + LEG_OUTLINE*2, 
+                -LEG_HEIGHT - LEG_OUTLINE);
 
             // Leg base
             c.setColor(...LEG_COLOR);
             c.fillShape(Shape.EquilTriangle,
-                mx + 10*i, legY + legYMod*i, 16, -LEG_HEIGHT);
+                mx + LEG_OFF*i, legY + legYMod*i, 
+                LEG_WIDTH, -LEG_HEIGHT);
         }
 
         //
@@ -210,7 +222,7 @@ export class Player {
 
         c.push();
         c.translate(mx, my + HEAD_Y);
-        c.rotate(Math.sin(this.headAngle) * Math.PI/16.0);
+        c.rotate(Math.sin(this.headAngle) * HEAD_ANGLE);
         c.useTransform();   
 
         // Head outline
@@ -230,19 +242,24 @@ export class Player {
             // Black
             c.setColor(0, 0, 0);
             c.fillShape(Shape.Ellipse,
-                -12 * i, -6, 10, 10);
+                EYE_X * i, EYE_Y, 
+                EYE_RADIUS, EYE_RADIUS);
 
             // White
             c.setColor();
             c.fillShape(Shape.Ellipse,
-                -12 * i + 2, -8, 3, 3);
+                EYE_X * i + EYE_LIGHT_X, 
+                EYE_Y - EYE_LIGHT_Y, 
+                EYE_LIGHT_RADIUS, EYE_LIGHT_RADIUS);
         }
 
         // Beak
         for (let i = 0; i < 2; ++ i) {
 
             c.setColor(...BEAK_COLOR[i]);
-            c.fillShape(Shape.RAngledTriangle, -16*(1-i), 0, -16 + 32*i, 16);
+            c.fillShape(Shape.RAngledTriangle, 
+                -BEAK_SIZE*(1-i), 0, 
+                -BEAK_SIZE + (BEAK_SIZE*2)*i, BEAK_SIZE);
         }
 
 
