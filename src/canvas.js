@@ -75,7 +75,8 @@ export const Shape = {
     Rect: 0,
     RAngledTriangle: 1,
     EquilTriangle: 2,
-    Ellipse: 3
+    Ellipse: 3,
+    Cog : 4,
 };
 
 
@@ -91,9 +92,6 @@ export class Canvas extends Transform {
     constructor() {
         
         super();
-
-        // Circle "precision"
-        const CIRCLE_PREC = 32;
 
         // Create an Html5 canvas and append it
         // to a div
@@ -116,17 +114,8 @@ export class Canvas extends Transform {
         this.gl = null;
         this.initGL();
 
-        // Create meshes
-        let sgen = new ShapeGen(this.gl);
-        this.mRect = sgen.rect();
-        this.mRAngledTriangle = sgen.rightAngledTriangle();
-        this.mEquilTriangle = sgen.regPoly(3);
-        this.mEllipse = sgen.regPoly(CIRCLE_PREC);
-        // Array for shapes
-        this.shapes = [
-            this.mRect, this.mRAngledTriangle,
-            this.mEquilTriangle, this.mEllipse
-        ];
+        // Create shapes
+        this.createShapes();
 
         // Build shaders
         this.shaderNoTex= new Shader(this.gl, 
@@ -149,6 +138,28 @@ export class Canvas extends Transform {
         // Resize now
         this.resize(window.innerWidth, 
             window.innerHeight);
+    }
+
+
+    //
+    // Create shapes
+    //
+    createShapes() {
+
+        const CIRCLE_PREC = 32;
+        const COG_TOOTH_WAIT = 2;
+        const COG_TOOTH = 0.25;
+
+        // Create shapes
+        let sgen = new ShapeGen(this.gl);
+        this.shapes = [
+
+            sgen.rect(), // Rectangle
+            sgen.rightAngledTriangle(), // Right-angled triangle
+            sgen.regPoly(3), // Equilateral triangle
+            sgen.regPoly(CIRCLE_PREC), // Ellipse
+            sgen.regPoly(CIRCLE_PREC, null, COG_TOOTH_WAIT, COG_TOOTH, 0.33), // Cog
+        ];
     }
 
 
@@ -177,9 +188,6 @@ export class Canvas extends Transform {
         // Enable attribute arrays
         gl.enableVertexAttribArray(0);
         gl.enableVertexAttribArray(1);
-        
-        // Create rectangle mesh
-        this.createRectMesh();
     }
 
 
@@ -245,37 +253,6 @@ export class Canvas extends Transform {
 
         // Create a font bitmap
         this.bmpFont = new Bitmap(t, 1024, 1024);
-    }
-
-    //
-    // Create rectangle mesh
-    //
-    createRectMesh() {
-
-        let gl = this.gl;
-    
-        // Data for the rectangle mesh
-        const VERTICES = [
-            0.0, 0.0,
-            1.0, 0.0,
-            1.0, 1.0,
-            0.0, 1.0,
-        ];
-        const INDICES = [
-            0,1,2, 
-            2,3,0,
-        ]
-        const UVS = [
-            0.0, 0.0,
-            1.0, 0.0,
-            1.0, 1.0,
-            0.0, 1.0,
-        ];
-    
-        // Create rectangle mesh
-        this.mRect = new Mesh(
-            gl, VERTICES, UVS, INDICES
-        );
     }
 
 
@@ -352,7 +329,7 @@ export class Canvas extends Transform {
             sx/bmp.w, sy/bmp.h, 
             sw/bmp.w, sh/bmp.h);
 
-        this.drawMesh(this.mRect, bmp);
+        this.drawMesh(this.shapes[Shape.Rect], bmp);
     }
 
 
@@ -385,7 +362,7 @@ export class Canvas extends Transform {
 
         if (center) {
 
-            dx -= ((str.length + 1) / 2.0 * (cw + xoff) * sx);
+            dx -= (str.length/ 2.0 * (cw + xoff) * usx);
             x = dx;
         }
 
