@@ -2,6 +2,7 @@ import { Vector2 } from "./vector.js";
 import { Tile } from "./stage.js";
 import { Shape } from "./canvas.js";
 import { State, Action } from "./input.js";
+import { MOVE_TIME, Movable } from "./movable.js";
 
 //
 // Player object
@@ -9,14 +10,7 @@ import { State, Action } from "./input.js";
 //
 
 
-// Move time
-export const MOVE_TIME = 30;
-
-
-//
-// Player class
-//
-export class Player {
+export class Player extends Movable {
 
 
     //
@@ -24,22 +18,7 @@ export class Player {
     //
     constructor(x, y) {
 
-        // Grid position
-        this.pos = new Vector2(x | 0, y | 0);
-        // Render position (top-left corner)
-        this.rpos = new Vector2(x * Tile.Width, y * Tile.Height);
-
-        // Move timer
-        this.moveTimer = 0;
-        // Move target
-        this.target = this.pos.clone();
-        // Is moving
-        this.moving = false;
-
-        // Head angle
-        this.headAngle = 0.0;
-        // Leg timer
-        this.legTimer = 0.0;
+        super(x, y);
     }
 
 
@@ -82,30 +61,6 @@ export class Player {
             this.target.x = tx;
             this.target.y = ty;
         }
-    }
-
-    //
-    // Move
-    //
-    move(ev) {
-
-        // Not moving, not interested
-        if (!this.moving) return;
-
-        // Update move timer
-        if ( (this.moveTimer -= ev.step) <= 0) {
-
-            this.moveTimer = 0.0;
-            this.moving = false;
-
-            this.pos = this.target.clone();
-        }
-
-        // Compute render pos
-        let t = this.moveTimer / MOVE_TIME;
-        this.rpos.x = (this.pos.x * t + (1-t) * this.target.x) * Tile.Width;
-        this.rpos.y = (this.pos.y * t + (1-t) * this.target.y) * Tile.Height;
-
     }
 
 

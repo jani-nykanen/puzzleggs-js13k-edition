@@ -40,6 +40,10 @@ export class Stage {
         this.w = src.w;
         this.h = src.h;
 
+        // Create an array for solid tile data
+        this.solid = new Array(src.w * src.h);
+        this.solid.fill(0);
+
         // Parse objects
         this.parseObjects(o);
     }
@@ -61,14 +65,21 @@ export class Stage {
     //
     isSolid(x, y) {
 
-        const SOLID = [1];
-
-        return SOLID.includes(this.getTile(x, y));
+        return this.solid[y * this.w + x] > 0;
     }
 
 
     //
-    // Parse objects
+    // Get solid value
+    //
+    getSolid(x, y) {
+
+        return this.solid[y * this.w + x];
+    }
+
+
+    //
+    // Parse objects (and solid data)
     //
     parseObjects(o) {
         
@@ -81,11 +92,26 @@ export class Stage {
 
                 switch(t) {
 
+                // Wall
+                case 1:
+                    this.updateSolid(x, y, 1);
+                    break;
+
                 // Player
                 case 2:
                     o.createPlayer(x, y);
                     break;
+
+                // Egg
+                case 3:
+                    o.createEgg(x, y);
+                    break;
+            
+                default:
+                    break;
                 }
+
+                
             }
         }
     }
@@ -439,5 +465,14 @@ export class Stage {
                 }
             }
         }
+    }
+
+
+    //
+    // Update solid
+    //
+    updateSolid(x, y, s) {
+
+        this.solid[y * this.w + x] = s;
     }
 }

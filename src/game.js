@@ -1,7 +1,7 @@
 import { Shape } from "./canvas.js";
 import { Stage, Tile } from "./stage.js";
 import { ObjectManager } from "./objects.js";
-import { MOVE_TIME } from "./player.js";
+import { MOVE_TIME } from "./movable.js";
 
 //
 // Game scene

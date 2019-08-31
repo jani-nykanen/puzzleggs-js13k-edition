@@ -1,4 +1,5 @@
 import { Player } from "./player.js";
+import { Egg } from "./egg.js";
 
 //
 // Game object manager
@@ -14,11 +15,13 @@ export class ObjectManager {
     constructor() {
 
         this.player = null;
+        this.eggs = [];
+        this.eggFollowers = [];
     }
 
 
     //
-    // Create player object
+    // Create a player object
     //
     createPlayer(x, y) {
 
@@ -30,6 +33,14 @@ export class ObjectManager {
 
 
     //
+    // Create an egg
+    //
+    createEgg(x, y) {
+
+        this.eggs.push(new Egg(x, y));
+    }
+
+    //
     // Update game objects
     //
     update(stage, ev) {
@@ -39,6 +50,14 @@ export class ObjectManager {
 
             this.player.update(stage, ev);
         }
+
+        // Update eggs
+        for (let i = 0; i < this.eggs.length; ++ i) {
+
+            this.eggs[i].update(stage, ev);
+            this.eggs[i].playerCollision(
+                this.player, this.eggFollowers);
+        }
     }
 
 
@@ -46,6 +65,12 @@ export class ObjectManager {
     // Draw game objects
     //
     draw(c) {
+
+        // Draw eggs
+        for (let i = 0; i < this.eggs.length; ++ i) {
+
+            this.eggs[i].draw(c);
+        }
 
         // Draw player
         if (this.player != null) {
