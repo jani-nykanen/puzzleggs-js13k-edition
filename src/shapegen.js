@@ -110,6 +110,46 @@ export class ShapeGen {
 
 
     //
+    // Generate a filled shape of a curve
+    //
+    filledCurve(x, n, l) {
+
+        if (l == null)
+            l = Math.PI * 2;
+
+        let step = l / n;
+
+        let vertices = new Array();
+        let indices = new Array();
+
+        // Compute vertices
+        let p1, p2;
+        for (let i = 0; i < n; ++ i) {
+
+            p1 = x(step * i);
+            p2 = x(step * (i+1));
+            vertices.push(
+                p1[0], p1[1],
+                p2[0], p2[1],
+                0, 0
+            );
+        }
+
+        // Compute indices
+        let end = n * 3;
+        for (let i = 0; i < end; ++ i) {
+
+            indices.push(i);
+        }
+
+        return new Mesh(
+            this.gl,
+            vertices, vertices, indices
+        );
+    }
+
+
+    //
     // Generate a right-angled triangle
     //
     rightAngledTriangle() {

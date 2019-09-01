@@ -76,7 +76,8 @@ export const Shape = {
     RAngledTriangle: 1,
     EquilTriangle: 2,
     Ellipse: 3,
-    Cog : 4,
+    Cog: 4,
+    Egg: 5,
 };
 
 
@@ -149,6 +150,7 @@ export class Canvas extends Transform {
         const CIRCLE_PREC = 32;
         const COG_TOOTH_WAIT = 2;
         const COG_TOOTH = 0.25;
+        const EGG_PREC = 24;
 
         // Create shapes
         let sgen = new ShapeGen(this.gl);
@@ -159,6 +161,10 @@ export class Canvas extends Transform {
             sgen.equilTriangle(), // Equilateral triangle
             sgen.regPoly(CIRCLE_PREC), // Ellipse
             sgen.regPoly(CIRCLE_PREC, null, COG_TOOTH_WAIT, COG_TOOTH, 0.33), // Cog
+            sgen.filledCurve(t => 
+                [Math.cos( 1.25 * (t-Math.PI)/4) * Math.sin(t-Math.PI), 
+                Math.cos(t-Math.PI)], 
+                EGG_PREC), // Egg
         ];
     }
 

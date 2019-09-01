@@ -133,22 +133,19 @@ export class Player extends Movable {
         const EYE_LIGHT_Y = 2;
 
         const SHADOW_WIDTH = 48;
-        const SHADOW_HEIGHT = 16;
-        const SHADOW_OFF = 14;
+        const SHADOW_HEIGHT = 14;
+        const SHADOW_OFF = 12;
         const SHADOW_ALPHA = 0.25;
 
         let mx = this.rpos.x + Tile.Width/2;
         let my = this.rpos.y + Tile.Height/2;
 
-        //
         // Draw shadow
-        //
         c.setColor(0, 0, 0, SHADOW_ALPHA);
         c.fillShape(Shape.Ellipse, 
             mx, 
             my + (HEAD_Y + LEG_OFF) + LEG_HEIGHT + SHADOW_OFF,
             SHADOW_WIDTH/2, SHADOW_HEIGHT/2 );
-
 
         //
         // Draw legs
