@@ -26,6 +26,8 @@ export class ObjectManager {
 
             this.stars[i] = new Star();
         }
+
+        this.depthList = [];
     }
 
 
@@ -53,17 +55,42 @@ export class ObjectManager {
     //
     // Create a star
     //
-    createStar(x, y, sx, sy, scale, ts, col) {
+    createStar(x, y, sx, sy, scale, ts, col, depth) {
 
         let s;
         for (let i = 0; i < this.stars.length; ++ i) {
 
             if (!((s = this.stars[i]).exist) ) {
 
-                s.createSelf(x, y, sx, sy, scale, ts, col);
+                s.createSelf(x, y, sx, sy, scale, ts, col, depth);
                 return;
             }
         }
+    }
+
+
+    //
+    // Sort objects by depth
+    //
+    sortObjects() {
+
+        // TODO: Make sure this does not leak memory!
+
+        // Push objects to array
+        this.depthList = new Array();
+        this.depthList.push(this.player);
+        for (let i = 0; i < this.eggs.length; ++ i)
+            this.depthList.push(this.eggs[i]);
+        for (let i = 0; i < this.stars.length; ++ i) {
+
+            if (this.stars[i].exist) {
+
+                this.depthList.push(this.stars[i]);
+            }
+        }
+
+        // Sort
+        this.depthList.sort((a, b) => { return a.depth - b.depth });
     }
 
 
@@ -84,7 +111,7 @@ export class ObjectManager {
             this.eggs[i].update(stage, ev);
             this.eggs[i].playerCollision(
                 this.player, this.eggFollowers,
-                this);
+                this, stage);
         }
 
         // Update stars
@@ -100,25 +127,15 @@ export class ObjectManager {
     //
     draw(c) {
 
-        // Draw eggs
-        for (let i = 0; i < this.eggs.length; ++ i) {
+        // Sort objects
+        this.sortObjects();
+        // Draw sorted objects
+        for (let i = 0; i < this.depthList.length; ++ i) {
 
-            this.eggs[i].draw(c);
-        }
-
-        // Draw stars
-        for (let i = 0; i < this.stars.length; ++ i) {
-
-            this.stars[i].draw(c);
-        }
-
-        // Draw player
-        if (this.player != null) {
-            
-            this.player.draw(c);
+            this.depthList[i].draw(c);
         }
     }
-
+    
 
     //
     // Is something moving etc

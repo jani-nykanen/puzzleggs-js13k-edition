@@ -19,6 +19,8 @@ export class Player extends Movable {
     constructor(x, y) {
 
         super(x, y);
+
+        this.headTimer = 0;
     }
 
 
@@ -71,6 +73,7 @@ export class Player extends Movable {
 
         const HEAD_SPEED = Math.PI * 2 / MOVE_TIME;
         const LEG_SPEED = HEAD_SPEED;
+        const HEAD_STILL_SPEED = 0.05;
 
         if (this.moving) {
 
@@ -80,11 +83,17 @@ export class Player extends Movable {
 
             this.headAngle %= Math.PI * 2;
             this.legTimer %= Math.PI * 2;
+
+            this.headTimer = 0.0;
         }
         else {
 
             this.headAngle = 0;
             this.legTimer = 0;
+
+            // Update head timer
+            this.headTimer += HEAD_STILL_SPEED * ev.step;
+            this.headAngle %= Math.PI * 2;
         }
     }
 
@@ -100,6 +109,9 @@ export class Player extends Movable {
         this.move(ev);
         // Animate
         this.animate(ev);
+
+        // Compute depth
+        this.depth = this.rpos.y + Tile.Height/2 + 18;
     }
 
 
@@ -112,6 +124,7 @@ export class Player extends Movable {
         const HEAD_H = 40;
         const HEAD_Y = -12;
         const HEAD_ANGLE = Math.PI / 16.0;
+        const HEAD_STILL_MUL = 2;
 
         const LEG_OUTLINE = 2;
         const LEG_COLOR = [0.67, 0.40, 0.1];
@@ -173,7 +186,8 @@ export class Player extends Movable {
         //
 
         c.push();
-        c.translate(mx, my + HEAD_Y);
+        c.translate(mx, my + HEAD_Y + 
+            Math.sin(this.headTimer) * HEAD_STILL_MUL);
         c.rotate(Math.sin(this.headAngle) * HEAD_ANGLE);
         c.useTransform();   
 

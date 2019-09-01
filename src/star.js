@@ -30,6 +30,7 @@ export class Star {
         this.timerSpeed = 1;
         this.color = [1, 1, 1];
         this.scale = 32;
+        this.depth = 0;
 
         this.exist = false;
     }
@@ -38,7 +39,7 @@ export class Star {
     //
     // Create self
     //
-    createSelf(x, y, sx, sy, scale, ts, col) {
+    createSelf(x, y, sx, sy, scale, ts, col, depth) {
 
         this.pos = new Vector2(x, y);
         this.speed = new Vector2(sx, sy);
@@ -48,6 +49,7 @@ export class Star {
         this.timerSpeed = ts != null ? ts : 1.0;
         this.color = col == null ? [1, 1, 1] : col;
         this.scale = scale;
+        this.depth = depth;
 
         this.exist = true;
     }

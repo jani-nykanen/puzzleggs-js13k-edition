@@ -21,6 +21,8 @@ export class Movable {
         this.pos = new Vector2(x | 0, y | 0);
         // Render position (top-left corner)
         this.rpos = new Vector2(x * Tile.Width, y * Tile.Height);
+        // Depth (for sorting)
+        this.depth = 0;
 
         // Move timer
         this.moveTimer = 0;

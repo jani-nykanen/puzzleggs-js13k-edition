@@ -23,15 +23,6 @@ export class Egg extends Movable {
 
 
     //
-    // Animate
-    //
-    animate(ev) {
-
-        // ...
-    }
-
-
-    //
     // Update
     //
     update(stage, ev) {
@@ -70,13 +61,16 @@ export class Egg extends Movable {
 
         // Move
         this.move(ev);
+
+        // Compute depth
+        this.depth = this.rpos.y + Tile.Height/2 + 16;
     }
 
 
     //
     // Player collision
     //
-    playerCollision(pl, eggs, o) {
+    playerCollision(pl, eggs, o, stage) {
 
         const STAR_COUNT = 5;
         const STAR_SPEED = 4.0;
@@ -113,10 +107,14 @@ export class Egg extends Movable {
                         Math.cos(angle) * STAR_SPEED, 
                         Math.sin(angle) * STAR_SPEED - STAR_GRAV_BONUS, 
                         STAR_RADIUS, 
-                        1, [1.0, 0.25, 0.20]);
+                        1, [1.0, 0.25, 0.20],
+                        this.depth);
 
                 angle += step;
             }
+
+            // Update solid data
+            stage.updateSolid(this.pos.x, this.pos.y, 2);
         }
     }
 
