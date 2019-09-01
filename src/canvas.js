@@ -78,6 +78,7 @@ export const Shape = {
     Ellipse: 3,
     Cog: 4,
     Egg: 5,
+    Star: 6,
 };
 
 
@@ -151,6 +152,7 @@ export class Canvas extends Transform {
         const COG_TOOTH_WAIT = 2;
         const COG_TOOTH = 0.25;
         const EGG_PREC = 24;
+        const STAR_JUMP = 1.0;
 
         // Create shapes
         let sgen = new ShapeGen(this.gl);
@@ -165,6 +167,7 @@ export class Canvas extends Transform {
                 [Math.cos( 1.25 * (t-Math.PI)/4) * Math.sin(t-Math.PI), 
                 Math.cos(t-Math.PI)], 
                 EGG_PREC), // Egg
+            sgen.star(5, STAR_JUMP), // Star
         ];
     }
 

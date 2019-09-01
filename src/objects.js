@@ -1,5 +1,6 @@
 import { Player } from "./player.js";
 import { Egg } from "./egg.js";
+import { Star } from "./star.js";
 
 //
 // Game object manager
@@ -14,9 +15,17 @@ export class ObjectManager {
     //
     constructor() {
 
+        const STAR_COUNT = 16;
+
         this.player = null;
         this.eggs = [];
         this.eggFollowers = [];
+
+        this.stars = new Array(STAR_COUNT);
+        for (let i = 0; i < this.stars.length; ++ i) {
+
+            this.stars[i] = new Star();
+        }
     }
 
 
@@ -40,6 +49,24 @@ export class ObjectManager {
         this.eggs.push(new Egg(x, y));
     }
 
+
+    //
+    // Create a star
+    //
+    createStar(x, y, sx, sy, scale, ts, col) {
+
+        let s;
+        for (let i = 0; i < this.stars.length; ++ i) {
+
+            if (!((s = this.stars[i]).exist) ) {
+
+                s.createSelf(x, y, sx, sy, scale, ts, col);
+                return;
+            }
+        }
+    }
+
+
     //
     // Update game objects
     //
@@ -56,7 +83,14 @@ export class ObjectManager {
 
             this.eggs[i].update(stage, ev);
             this.eggs[i].playerCollision(
-                this.player, this.eggFollowers);
+                this.player, this.eggFollowers,
+                this);
+        }
+
+        // Update stars
+        for (let i = 0; i < this.stars.length; ++ i) {
+
+            this.stars[i].update(ev);
         }
     }
 
@@ -76,6 +110,12 @@ export class ObjectManager {
         if (this.player != null) {
             
             this.player.draw(c);
+        }
+
+        // Draw stars
+        for (let i = 0; i < this.stars.length; ++ i) {
+
+            this.stars[i].draw(c);
         }
     }
 

@@ -76,7 +76,7 @@ export class Egg extends Movable {
     //
     // Player collision
     //
-    playerCollision(pl, eggs) {
+    playerCollision(pl, eggs, o) {
 
         if (this.follow != null) return;
 
@@ -94,6 +94,11 @@ export class Egg extends Movable {
                 this.follow = pl;
             }
             eggs.push(this);
+
+            // Create stars
+            o.createStar(this.rpos.x + Tile.Width/2,
+                    this.rpos.y + Tile.Height/2,
+                    -4, -4, 12, 1, [1.0, 0.50, 0.40]);
         }
     }
 
@@ -107,7 +112,12 @@ export class Egg extends Movable {
         const OUTLINE = [6, 3, 0];
         const OFF_X = [0, 0, -2, -6];
         const OFF_Y = [0, 0, -2, -6];
-        const COLOR = [ [0,0,0], [0.50, 0.45, 0.40], [0.85, 0.80, 0.75], [1,1,1] ];
+        const COLOR1 = 
+            [ [0,0,0], [0.50, 0.45, 0.40], 
+            [0.85, 0.80, 0.75], [1,1,1] ];
+        const COLOR2 = 
+            [ [0,0,0], [0.80, 0.25, 0.15], 
+            [1.0, 0.50, 0.40], [1,0.80,0.80] ];
         const RADIUS = 22;
         const REF_RADIUS = 10;
 
@@ -118,6 +128,7 @@ export class Egg extends Movable {
 
         let mx = this.rpos.x + Tile.Width/2;
         let my = this.rpos.y + Tile.Height/2 + BASE_OFF;
+        let color = this.follow ? COLOR1 : COLOR2;
 
         // Draw shadow
         c.setColor(0, 0, 0, SHADOW_ALPHA);
@@ -133,14 +144,14 @@ export class Egg extends Movable {
         // Draw outline & base shape
         for (let i = 0; i < 3; ++ i) {
 
-            c.setColor( ...COLOR[i]);
+            c.setColor( ...color[i]);
             c.fillShape(Shape.Egg, 
                 OFF_X[i], OFF_Y[i], 
                 RADIUS + OUTLINE[i], RADIUS+ OUTLINE[i]);
         }
 
         // Draw reflection
-        c.setColor( ...COLOR[3]);
+        c.setColor( ...color[3]);
         c.fillShape(Shape.Ellipse, 
             OFF_X[3], OFF_Y[3], 
             REF_RADIUS, REF_RADIUS);

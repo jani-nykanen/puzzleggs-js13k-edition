@@ -185,4 +185,45 @@ export class ShapeGen {
             [0,1,2]
         );
     }
+
+
+    //
+    // Generate a star
+    //
+    star(n, jump) {
+
+        n *= 2;
+
+        let step = Math.PI * 2 / n;
+
+        let vertices = new Array();
+        let indices = new Array();
+
+        let r1, r2;
+
+        // Compute vertices
+        for (let i = 0; i < n; ++ i) {
+
+            r1 = i % 2 == 0 ? 1 : 1 + jump;
+            r2 = i % 2 == 0 ? 1 + jump : 1;
+
+            vertices.push(
+                Math.cos(step * i) * r1, Math.sin(step * i) *  r1,
+                Math.cos(step * (i+1)) * r2, Math.sin(step * (i+1)) * r2,
+                0, 0
+            );
+        }
+
+         // Compute indices
+         let end = n * 3;
+         for (let i = 0; i < end; ++ i) {
+ 
+             indices.push(i);
+         }
+ 
+         return new Mesh(
+             this.gl,
+             vertices, vertices, indices
+         );
+    }
 }
