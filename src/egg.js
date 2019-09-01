@@ -95,6 +95,9 @@ export class Egg extends Movable {
             }
             eggs.push(this);
 
+            // Update player's egg count
+            ++ pl.eggCount;
+
             // Create stars
             angle = Math.random() * Math.PI * 2;
             step = Math.PI * 2 / STAR_COUNT;    

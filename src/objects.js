@@ -26,8 +26,11 @@ export class ObjectManager {
 
             this.stars[i] = new Star();
         }
-
+        // For sorthing objects
         this.depthList = [];
+
+        // Egg count
+        this.eggCount = 0;
     }
 
 
@@ -49,6 +52,8 @@ export class ObjectManager {
     createEgg(x, y) {
 
         this.eggs.push(new Egg(x, y));
+
+        ++ this.eggCount;
     }
 
 
@@ -143,6 +148,15 @@ export class ObjectManager {
     isActive() {
 
         return this.player.moving;
+    }
+
+
+    //
+    // Are the eggs collected
+    //
+    eggsCollected() {
+
+        return this.eggCount == this.player.eggCount;
     }
 
 }

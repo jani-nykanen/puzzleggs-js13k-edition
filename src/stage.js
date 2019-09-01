@@ -10,6 +10,9 @@ import { Shape } from "./canvas.js";
 // Tile dimensions
 export const Tile = {Width: 64, Height: 64};
 
+// Local constants
+const PORTAL_APPEAR_TIME = 30.0;
+
 
 //
 // Stage class
@@ -43,6 +46,10 @@ export class Stage {
         // Create an array for solid tile data
         this.solid = new Array(src.w * src.h);
         this.solid.fill(0);
+
+        // Portal timer
+        this.portalTimer = 0.0;
+        this.portalAppearTimer = PORTAL_APPEAR_TIME;
 
         // Parse objects
         this.parseObjects(o);
@@ -440,11 +447,69 @@ export class Stage {
 
 
     //
+    // Draw starting tile
+    //
+    drawStartingTile(c, x, y) {
+
+        const SIZE_MOD = 0.80;
+        const THICKNESS = 16;
+
+        let w = Tile.Width * SIZE_MOD;
+        let h = Tile.Height * SIZE_MOD;
+
+        c.push();
+        c.translate( (x+0.5) * Tile.Width, (y+0.5) * Tile.Height);
+        c.rotate(Math.PI / 4);
+        c.useTransform();
+
+        c.setColor(0.67, 0.0, 0.0);
+        c.fillShape(Shape.Rect, -w/2, -THICKNESS/2, w, THICKNESS);
+        c.fillShape(Shape.Rect, -THICKNESS/2, -h/2, THICKNESS, h);
+
+        c.pop();
+    }
+
+
+    //
+    // Draw portal
+    //
+    drawPortal(c, x, y, s) {
+
+        const LOOP = 4;
+        const OUTLINE = 3;
+
+        let w = Tile.Width - OUTLINE*2;
+        let h = Tile.Height - OUTLINE*2;
+
+        let mx = (x+0.5) * Tile.Width;
+        let my = (y+0.5) * Tile.Height;
+
+        c.setColor(0.75, 0, 1.0);
+        c.fillShape(Shape.Rect, 
+            mx - w/2 * s, my - h/2*s,
+            w*s, h*s);
+        
+        let t;
+        let step = 1.0 / LOOP;
+        for (let i = 0; i < LOOP; ++ i) {
+
+            t = 1.0 - ((step * i + this.portalTimer * step) % 1.0);
+
+            c.setColor(0.75 * t, 0.0, 1.0 * t);
+            c.fillShape(Shape.Rect, 
+                mx - t * w/2 * s, my - t* h/2 * s, 
+                w * t * s, h*t * s);
+        }
+    }
+
+
+    //
     // Draw tiles
     //
-    drawTiles(c) {
+    drawTiles(c, beaten) {
 
         let t = 0;
+        let s = 0;
         for (let y = 0; y < this.h; ++ y) {
 
             for (let x = 0; x < this.w; ++ x) {
@@ -460,10 +525,53 @@ export class Stage {
 
                 // Floor
                 default:
+
+                    // Draw base floor tile
                     this.drawFloorPiece(c, x, y);
+                        
+                    // Draw starting/ending tile
+                    if (t == 2) {
+
+                        s = this.portalAppearTimer / PORTAL_APPEAR_TIME;
+
+                        if (beaten && s <= 0) {
+                            
+                            this.drawPortal(c, x, y, 1.0);
+                        }
+                        else if (!beaten || s > 0) {
+
+                            this.drawStartingTile(c, x, y);
+                            this.drawPortal(c, x, y, 1.0 - s);
+                        }
+                    }
+
                     break;
                 }
             }
+        }
+    }
+
+
+    //
+    // Update stage
+    //
+    update(beaten, ev) {
+
+        const PORTAL_SPEED = 0.025;
+
+        // Update portal
+        if (beaten) {
+
+            // Update fading
+            if (this.portalAppearTimer > 0.0) {
+
+                this.portalAppearTimer -= 1.0 * ev.step;
+                this.portalAppearTimer = Math.max(0, this.portalAppearTimer);
+            }
+
+            // Update timer
+            this.portalTimer = 
+                (this.portalTimer + PORTAL_SPEED*ev.step) % 1;
         }
     }
 

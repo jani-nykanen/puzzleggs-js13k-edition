@@ -33,9 +33,6 @@ export class Game {
         this.cogAngle = 0.0;
         // Floating text value
         this.textFloatValue = 0.0;
-
-        // Temp
-        this.frameSkip = 0;
     }
 
 
@@ -46,6 +43,9 @@ export class Game {
 
         const COG_SPEED = Math.PI/2.0 / MOVE_TIME;
         const FLOAT_SPEED = 0.05;
+
+        // Update stage
+        this.stage.update(this.objMan.eggsCollected(), ev);
 
         // Update objects
         this.objMan.update(this.stage, ev);
@@ -63,9 +63,6 @@ export class Game {
 
         // Update floating text
         this.textFloatValue += FLOAT_SPEED * ev.step;
-
-        // TEMP
-        this.frameSkip += ev.step;
     }
 
 
@@ -202,7 +199,7 @@ export class Game {
         this.stage.setStageView(c);
 
         // Draw stage
-        this.stage.drawTiles(c);
+        this.stage.drawTiles(c, this.objMan.eggsCollected());
 
         // Draw game objects
         this.objMan.draw(c);
@@ -216,18 +213,6 @@ export class Game {
         // Draw cogs
         this.drawCogs(c);
 
-        // Compute FPS
-        /*
-        let fps = "FPS: " + String( (60.0 / this.frameSkip) | 0);
-        this.frameSkip = 0;
-
-        // Draw FPS
-        c.toggleTexturing(true);
-        c.setColor(1, 1, 0);
-        c.drawScaledText(fps, 
-            c.viewport.x/2, 0, -20, 0, 
-            48, 48, true);
-        */
 
         // Draw stage info
         this.drawStageInfo(c);

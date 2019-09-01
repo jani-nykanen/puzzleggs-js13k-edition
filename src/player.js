@@ -21,6 +21,7 @@ export class Player extends Movable {
         super(x, y);
 
         this.headTimer = 0;
+        this.eggCount = 0;
     }
 
 
