@@ -58,17 +58,19 @@ export class Star {
     //
     update(ev) {
 
-        const GRAVITY = 0.15;
+        const GRAVITY = 0.20;
+        const GRAV_MAX = 4.0;
         const ANGLE_COMP = 8.0;
-        const ANGLE_SPEED = 0.1;
+        const ANGLE_SPEED = 0.25;
 
         if (!this.exist) return;
 
         // Update speed
         this.speed.y += GRAVITY * ev.step;
+        this.speed.y = Math.min(GRAV_MAX, this.speed.y);
 
         // Update angle
-        this.angle += Math.abs(this.speed.x) / 
+        this.angle += this.speed.x / 
             ANGLE_COMP * ANGLE_SPEED * ev.step;
 
         // Update timer

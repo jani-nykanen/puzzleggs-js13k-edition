@@ -106,16 +106,16 @@ export class ObjectManager {
             this.eggs[i].draw(c);
         }
 
-        // Draw player
-        if (this.player != null) {
-            
-            this.player.draw(c);
-        }
-
         // Draw stars
         for (let i = 0; i < this.stars.length; ++ i) {
 
             this.stars[i].draw(c);
+        }
+
+        // Draw player
+        if (this.player != null) {
+            
+            this.player.draw(c);
         }
     }
 

@@ -78,8 +78,14 @@ export class Egg extends Movable {
     //
     playerCollision(pl, eggs, o) {
 
+        const STAR_COUNT = 5;
+        const STAR_SPEED = 4.0;
+        const STAR_RADIUS = 10;
+        const STAR_GRAV_BONUS = 4.0;
+
         if (this.follow != null) return;
 
+        let angle, step;
         if (pl.pos.x == this.pos.x && 
             pl.pos.y == this.pos.y) {
 
@@ -96,9 +102,21 @@ export class Egg extends Movable {
             eggs.push(this);
 
             // Create stars
-            o.createStar(this.rpos.x + Tile.Width/2,
-                    this.rpos.y + Tile.Height/2,
-                    -4, -4, 12, 1, [1.0, 0.50, 0.40]);
+            angle = Math.random() * Math.PI * 2;
+            step = Math.PI * 2 / STAR_COUNT;    
+
+            for (let i = 0; i < STAR_COUNT; ++ i) {
+
+                o.createStar(
+                        this.rpos.x + Tile.Width/2,
+                        this.rpos.y + Tile.Height/2,
+                        Math.cos(angle) * STAR_SPEED, 
+                        Math.sin(angle) * STAR_SPEED - STAR_GRAV_BONUS, 
+                        STAR_RADIUS, 
+                        1, [1.0, 0.25, 0.20]);
+
+                angle += step;
+            }
         }
     }
 
