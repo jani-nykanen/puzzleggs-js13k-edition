@@ -5,4 +5,5 @@ cat html_up.txt > index.html
 cat out.js >> index.html
 cat html_down.txt >> index.html
 zip -r ../dist.zip index.html
+advzip -z ../dist.zip
 rm index.html
