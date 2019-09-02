@@ -102,12 +102,17 @@ export class ObjectManager {
     //
     // Update game objects
     //
-    update(stage, ev) {
+    update(stage, game, ev) {
 
         // Update player
         if (this.player != null) {
 
             this.player.update(stage, ev);
+            if (this.player.isStuck(stage, game)) {
+
+                game.restartTransition(true);
+                return;
+            }
         }
 
         // Update eggs

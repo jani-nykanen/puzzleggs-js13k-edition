@@ -46,6 +46,18 @@ export class Transform {
 
 
     //
+    // Scale model
+    //
+    scale(x, y) {
+
+        this.op.scale(x, y);
+        this.model = this.model.multiply(this.op);
+
+        this.productComputed = false;
+    }
+
+
+    //
     // Rotate model
     //
     rotate(angle) {
@@ -59,6 +71,7 @@ export class Transform {
 
     // 
     // Set world transformation
+    // TODO: Remove world matrix, unused
     //
     setWorldTransform(x, y, sx, sy, angle) {
 

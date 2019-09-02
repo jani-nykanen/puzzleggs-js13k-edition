@@ -1,5 +1,4 @@
 import { Shader } from "./shader.js";
-import { Mesh } from "./mesh.js";
 import { Transform } from "./transform.js";
 import { Bitmap } from "./bitmap.js";
 import { ShapeGen } from "./shapegen.js";

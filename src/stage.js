@@ -127,17 +127,24 @@ export class Stage {
     //
     // Set stage view
     //
-    setStageView(c) {
+    setStageView(c, s) {
 
         // Fit view
         c.fitViewToDimension(c.w, c.h, 
             Tile.Height * this.h);
 
-        // Center
-        let tx = c.viewport.x / 2 - this.w*Tile.Width/2;
-        let ty = 0;
+        let mx = this.w*Tile.Width/2;
+        let my = this.h*Tile.Height/2;
 
-        c.setWorldTransform(tx, ty);
+        // Center
+        let tx = c.viewport.x / 2 - mx;
+        let ty = 0;
+        
+        c.translate(tx, ty);
+        c.translate(mx, my);
+        c.scale(s, s);
+        c.translate(-mx, -my); 
+
         c.useTransform();
     }
 

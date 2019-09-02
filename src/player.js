@@ -21,7 +21,26 @@ export class Player extends Movable {
         super(x, y);
 
         this.headTimer = 0;
+        this.headAngle = 0;
         this.eggCount = 0;
+        this.legTimer = 0;
+    }
+
+
+    //
+    // Check if stuck
+    //
+    isStuck(stage) {
+
+        if (this.moving) return false;
+
+        let x = this.pos.x | 0;
+        let y = this.pos.y | 0;
+
+        return stage.isSolid(x-1, y) &&
+               stage.isSolid(x+1, y) &&
+               stage.isSolid(x, y-1) &&
+               stage.isSolid(x, y+1); 
     }
 
 

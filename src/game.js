@@ -2,6 +2,9 @@ import { Shape } from "./canvas.js";
 import { Stage, Tile } from "./stage.js";
 import { ObjectManager } from "./objects.js";
 import { MOVE_TIME } from "./movable.js";
+import { Transition } from "./transition.js";
+import { Action, State } from "./input.js";
+import { negMod, clamp } from "./util.js";
 
 //
 // Game scene
@@ -24,15 +27,49 @@ export class Game {
     // 
     constructor(gl) {
 
-        // Create an object manager
-        this.objMan = new ObjectManager();
-        // Create a stage
-        this.stage = new Stage(1, this.objMan);
+        // "Restart"
+        this.restart();
 
         // Cog angle
         this.cogAngle = 0.0;
         // Floating text value
         this.textFloatValue = 0.0;
+
+        // Local transition manager
+        this.localTr = new Transition();
+        this.localTr.activate(false, 1.0, ...BG_COLOR);
+
+        // Is stuck
+        this.stuck = false;
+    }
+
+
+    //
+    // Restart stage
+    //
+    restart() {
+
+        // (Re)create an object manager
+        this.objMan = new ObjectManager();
+        // (Re)create a stage
+        this.stage = new Stage(1, this.objMan);
+    }
+
+
+    //
+    // Set restart transitoin
+    //
+    restartTransition(stuck) {
+
+        const STUCK_DELAY = 30;
+        
+        this.localTr.activate(
+            true, stuck ? 1.0 : 2.0, 
+            ...BG_COLOR, () => {this.restart();},
+            stuck ? STUCK_DELAY : null
+        );
+
+        this.stuck = stuck;
     }
 
 
@@ -44,25 +81,42 @@ export class Game {
         const COG_SPEED = Math.PI/2.0 / MOVE_TIME;
         const FLOAT_SPEED = 0.05;
 
-        // Update stage
-        this.stage.update(this.objMan.eggsCollected(), ev);
-
-        // Update objects
-        this.objMan.update(this.stage, ev);
-
-        if (this.objMan.isActive()) {
+        // Update floating text
+        this.textFloatValue += FLOAT_SPEED * ev.step;
+        
+        if (this.objMan.isActive() ||
+            this.localTr.active) {
 
             // Update cog angle
-            this.cogAngle = (this.cogAngle + COG_SPEED * ev.step) 
-                % (Math.PI / 2);
+            this.cogAngle = negMod(
+                this.cogAngle + COG_SPEED * 
+                (this.localTr.active ? -1 : 1) * ev.step ,
+                (Math.PI / 2));
         }
         else {
 
             this.cogAngle = 0;
         }
 
-        // Update floating text
-        this.textFloatValue += FLOAT_SPEED * ev.step;
+        // Update local transition, if active
+        if (this.localTr.active) {
+
+            this.localTr.update(ev);
+            return;
+        }
+
+        // Update stage
+        this.stage.update(this.objMan.eggsCollected(), ev);
+
+        // Update objects
+        this.objMan.update(this.stage, this, ev);
+
+        // Check restart key
+        if (ev.input.getKey(Action.Reset) == State.Pressed) {
+
+            this.restartTransition();
+        }
+        
     }
 
 
@@ -184,19 +238,73 @@ export class Game {
 
 
     //
+    // Draw stuck text
+    //
+    drawStuck(c) {
+
+        const FONT_SCALE = 96;
+        const OFFSET = 72;
+        const STR = "STUCK";
+        const MOVE = 64;
+
+        let mx = c.viewport.x/2;
+        let my = c.viewport.y/2;
+
+        let left = mx - (STR.length-1) * OFFSET / 2; 
+
+        c.toggleTexturing(true);
+
+        let t = this.localTr.getScaledTime();
+        if (this.localTr.fadeIn) {
+
+            t = Math.max(
+                1.0 - this.localTr.getScaledDelayTime(), t);
+        }
+
+        
+        let p = 0;
+        let d = 1.0/STR.length;
+        let y;
+        for (let i = 0; i < STR.length; ++ i) {
+
+            p = (t-d*(this.localTr.fadeIn ? i : (STR.length-1)-i))/d;
+            p = clamp(p, 0, 1);
+            y = -MOVE + MOVE*p;
+
+            c.setColor(1, 0.4, 0.0, p);
+            c.drawScaledText(STR.charAt(i), 
+                left + i * OFFSET, my - FONT_SCALE/2 + y,
+                0, 0, 
+                FONT_SCALE, FONT_SCALE, true);
+        }
+
+        c.toggleTexturing(false);
+    }
+
+
+    //
     // Draw the game scene
     //
     draw(c) {
 
         const VIEW_TARGET = 720.0;
+        const SCALE_TARGET = 0.25;
 
         c.clear(...BG_COLOR);
 
         // No textures
         c.toggleTexturing(false);
 
+        // Scale world, maybe
+        let s = 1;
+        if (this.localTr.active) {
+
+            s = this.localTr.getScaledTime();
+            s = 1.0 + s * SCALE_TARGET* (this.localTr.fadeIn ? 1 : -1);
+        }
+
         // Set stage transform
-        this.stage.setStageView(c);
+        this.stage.setStageView(c, s);
 
         // Draw stage
         this.stage.drawTiles(c, this.objMan.eggsCollected());
@@ -206,13 +314,18 @@ export class Game {
 
         // Reset view
         c.loadIdentity();
-        c.setWorldTransform();
         c.fitViewToDimension(c.w, c.h, VIEW_TARGET);
         c.useTransform();
 
+        // Draw local transition
+        this.localTr.draw(c);
+        if (this.localTr.active && this.stuck) {
+
+            this.drawStuck(c);
+        }
+
         // Draw cogs
         this.drawCogs(c);
-
 
         // Draw stage info
         this.drawStageInfo(c);
