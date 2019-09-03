@@ -42,7 +42,7 @@ export class Game {
         this.localTr.activate(false, 1.0, ...BG_COLOR);
 
         // Is stuck
-        this.stuck = false;
+        this.stuck = 0;
         // Stuck wave
         this.stuckWave = 0.0;
     }
@@ -72,7 +72,9 @@ export class Game {
         
         this.localTr.activate(
             true, stuck ? (3.0-stuck) : 2, 
-            ...BG_COLOR, () => {this.restart();},
+            ...BG_COLOR, () => 
+                {this.restart(stuck == 2 ? (++this.id) : 0);
+                },
             STUCK_DELAY * stuck
         );
 
@@ -109,7 +111,7 @@ export class Game {
         // Update local transition, if active
         if (this.localTr.active) {
 
-            if (this.stuck) {
+            if (this.stuck > 0) {
 
                 this.stuckWave = 
                     (this.stuckWave + STUCK_WAVE_SPEED*ev.step) % 
@@ -129,7 +131,6 @@ export class Game {
         // Go to the next stage, if stage finished
         if (this.objMan.stageFinished()) {
 
-            ++ this.id;
             this.restartTransition(2);
             return;
         }
@@ -217,7 +218,7 @@ export class Game {
     //
     drawStageInfo(c) {
 
-        const TEXT = ["STAGE 1", "Password: NONE"];
+        const TEXT = ["STAGE " + String(this.id), "Password: NONE"];
 
         const POS_Y = 4;
 
@@ -232,8 +233,14 @@ export class Game {
         c.toggleTexturing(true);
 
         // Draw stage text
-        let y;
+        let y, top;
         for (let j = 0; j < 2; ++ j) {
+
+            // F**king beautiful, isn't it
+            top = (this.stuck == 2 && this.localTr.active) ? 
+                (Math.max(this.localTr.getScaledTime(), 
+                    this.localTr.getScaledDelayTime()) * 
+                (AMPLITUDE[j] + FONT_SIZE[j])) : 0;
 
             for (let i = 1; i >= 0; -- i) {
 
@@ -242,6 +249,7 @@ export class Game {
                 else
                     y = c.viewport.y - POS_Y - Tile.Height/2;
                 y -= FONT_SIZE[j]/2 - i *SHADOW_Y[j];
+                y -= (1 - 2*j) * top;
 
                 if (i == 1)
                     c.setColor(0, 0, 0, SHADOW_ALPHA);
@@ -270,7 +278,9 @@ export class Game {
         const STR = ["STUCK", "STAGE CLEAR"] [this.stuck -1];
         const MOVE = 64;
         const WAVE_AMPLITUDE = -16;
-        const COLOR = [ [1, 0.4, 0.0], [1, 1, 0.75]] [this.stuck -1];
+        const COLOR = [ [1, 0.4, 0.0], [1, 1, 0.5]] [this.stuck -1];
+        const SHADOW_OFF = 8;
+        const SHADOW_ALPHA = 0.25;
 
         let mx = c.viewport.x/2;
         let my = c.viewport.y/2;
@@ -282,13 +292,13 @@ export class Game {
         let t = this.localTr.getScaledTime();
         if (this.localTr.fadeIn) {
 
-            t = 1.0 - this.localTr.getScaledDelayTime();;
+            t = this.localTr.getScaledDelayTime();;
         }
-
         
         let p = 0;
         let d = 1.0/STR.length;
         let y;
+        
         for (let i = 0; i < STR.length; ++ i) {
 
             p = (t-d*(this.localTr.fadeIn ? i : (STR.length-1)-i))/d;
@@ -297,14 +307,26 @@ export class Game {
                 Math.sin(this.stuckWave + i * Math.PI*2/STR.length) * 
                 WAVE_AMPLITUDE;
 
-            c.setColor(...COLOR, p);
-            c.drawScaledText(STR.charAt(i), 
-                left + i * OFFSET, my - FONT_SCALE/2 + y,
-                0, 0, 
-                FONT_SCALE, FONT_SCALE, true);
+            c.setGlobalAlpha(p);
+
+            // Draw base text & shadow
+            for (let j = 1; j >= 0 ; -- j) {
+
+                if (j == 0)
+                    c.setColor(...COLOR);
+                else
+                    c.setColor(0, 0, 0, SHADOW_ALPHA);
+
+                c.drawScaledText(STR.charAt(i), 
+                    left + i * OFFSET + SHADOW_OFF * j, 
+                    my - FONT_SCALE/2 + y + SHADOW_OFF * j,
+                    0, 0, 
+                    FONT_SCALE, FONT_SCALE, true);
+            }
         }
 
         c.toggleTexturing(false);
+        c.setGlobalAlpha(1);
     }
 
 
@@ -315,6 +337,8 @@ export class Game {
 
         const VIEW_TARGET = 720.0;
         const SCALE_TARGET = 0.25;
+        const VICTORY_SCALE = 8;
+        const VICTORY_ANGLE = Math.PI / 3;
 
         c.clear(...BG_COLOR);
 
@@ -323,14 +347,27 @@ export class Game {
 
         // Scale world, maybe
         let s = 1;
+        let m = 1;
+        let dx = null;
+        let dy = null;
+        let angle = null;
         if (this.localTr.active) {
 
+            // Set camera zoom target
+            if (this.stuck == 2 && this.localTr.fadeIn) {
+
+                dx = this.stage.startPos.x;
+                dy = this.stage.startPos.y;   
+                m = VICTORY_SCALE;
+                angle = -VICTORY_ANGLE * this.localTr.getScaledTime();
+            }
+
             s = this.localTr.getScaledTime();
-            s = 1.0 + s * SCALE_TARGET* (this.localTr.fadeIn ? 1 : -1);
+            s = 1.0 + s * m * SCALE_TARGET* (this.localTr.fadeIn ? 1 : -1);
         }
 
-        // Set stage transform
-        this.stage.setStageView(c, s);
+
+        this.stage.setStageView(c, s, dx, dy, angle);
 
         // Draw stage
         this.stage.drawTiles(c, this.objMan.eggsCollected());
@@ -345,7 +382,7 @@ export class Game {
 
         // Draw local transition
         this.localTr.draw(c);
-        if (this.localTr.active && this.stuck) {
+        if (this.localTr.active && this.stuck > 0) {
 
             this.drawStuck(c);
         }

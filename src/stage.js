@@ -1,5 +1,6 @@
 import { MapData } from "./mapdata.js";
 import { Shape } from "./canvas.js";
+import { Vector2 } from "./vector.js";
 
 //
 // Stage
@@ -50,6 +51,9 @@ export class Stage {
         // Portal timer
         this.portalTimer = 0.0;
         this.portalAppearTimer = PORTAL_APPEAR_TIME;
+
+        // Start position center (rendering-wise)
+        this.startPos = new Vector2();
 
         // Parse objects
         this.parseObjects(o);
@@ -107,6 +111,10 @@ export class Stage {
                 // Player
                 case 2:
                     o.createPlayer(x, y);
+                    
+                    this.startPos.x = (x + 0.5) * Tile.Width;
+                    this.startPos.y = (y + 0.5) * Tile.Height;
+
                     break;
 
                 // Egg
@@ -127,7 +135,7 @@ export class Stage {
     //
     // Set stage view
     //
-    setStageView(c, s) {
+    setStageView(c, s, dx, dy, angle) {
 
         // Fit view
         c.fitViewToDimension(c.w, c.h, 
@@ -139,9 +147,20 @@ export class Stage {
         // Center
         let tx = c.viewport.x / 2 - mx;
         let ty = 0;
+
+        if (dx != null) mx = dx;
+        if (dy != null) my = dy;
         
+        // Scale to middle
         c.translate(tx, ty);
+
+        // Scale & rotate around the 
+        // given center point
         c.translate(mx, my);
+        if (angle != null) {
+
+            c.rotate(angle);
+        }
         c.scale(s, s);
         c.translate(-mx, -my); 
 

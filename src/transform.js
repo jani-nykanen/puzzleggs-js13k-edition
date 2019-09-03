@@ -16,7 +16,6 @@ export class Transform {
 
         // Matrices
         this.projection = new Matrix3();
-        this.world = new Matrix3();
         this.model = new Matrix3();
         this.product = new Matrix3();
         this.op = new Matrix3();
@@ -69,31 +68,6 @@ export class Transform {
     }
 
 
-    // 
-    // Set world transformation
-    // TODO: Remove world matrix, unused
-    //
-    setWorldTransform(x, y, sx, sy, angle) {
-
-        this.world.identity();
-        this.productComputed = false;
-
-        if (x == null) return;
-
-        // Set world transforms in
-        // "TRS" order (should be correct?)
-        this.world.translate(x, y);
-        if (angle != null) {
-            this.op.rotate(angle);
-            this.world = this.world.multiply(this.op);
-        }
-        if (sx != null && sy != null) {
-            this.op.scale(sx, sy);
-            this.world = this.world.multiply(this.op);
-        }
-    }
-
-
     //
     // Set viewport
     //
@@ -143,7 +117,7 @@ export class Transform {
             return;
 
         this.product = this.projection.multiply(
-            this.world.multiply(this.model)
+            this.model
             );
         this.productComputed = true;
     }

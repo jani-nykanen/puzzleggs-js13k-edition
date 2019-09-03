@@ -118,6 +118,8 @@ export class Transition {
 
         if (this.delayTime <= EPS) return 0;
 
-        return this.delayTimer / this.delayTime;
+        let t = this.delayTimer / this.delayTime;
+        if (this.fadeIn) t = 1.0 - t;
+        return t;
     }
 }

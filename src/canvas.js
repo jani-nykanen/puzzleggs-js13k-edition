@@ -407,7 +407,7 @@ export class Canvas extends Transform {
             x += (cw + xoff) * usx;
         }
     }
-
+    
 
     //
     // Draw a mesh
