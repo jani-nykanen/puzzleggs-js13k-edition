@@ -123,6 +123,8 @@ export class Player extends Movable {
     //
     update(stage, ev) {
 
+        if (this.die(ev)) return;
+
         // Control
         this.control(stage, ev);
         // Move
@@ -170,8 +172,16 @@ export class Player extends Movable {
         const SHADOW_OFF = 12;
         const SHADOW_ALPHA = 0.25;
 
+        if (!this.exist) return;
+
         let mx = this.rpos.x + Tile.Width/2;
         let my = this.rpos.y + Tile.Height/2;
+
+        if (this.dying) {
+
+            c.setGlobalAlpha(this.deathTimer / MOVE_TIME);
+        }
+        
 
         // Draw shadow
         c.setColor(0, 0, 0, SHADOW_ALPHA);
@@ -250,5 +260,6 @@ export class Player extends Movable {
 
 
         c.pop();
+        c.setGlobalAlpha(1);
     }
 }

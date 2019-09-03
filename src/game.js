@@ -41,6 +41,8 @@ export class Game {
 
         // Is stuck
         this.stuck = false;
+        // Stuck wave
+        this.stuckWave = 0.0;
     }
 
 
@@ -64,7 +66,7 @@ export class Game {
         const STUCK_DELAY = 30;
         
         this.localTr.activate(
-            true, stuck ? 1.0 : 2.0, 
+            true, 2.0, 
             ...BG_COLOR, () => {this.restart();},
             stuck ? STUCK_DELAY : null
         );
@@ -80,6 +82,7 @@ export class Game {
 
         const COG_SPEED = Math.PI/2.0 / MOVE_TIME;
         const FLOAT_SPEED = 0.05;
+        const STUCK_WAVE_SPEED = 0.025;
 
         // Update floating text
         this.textFloatValue += FLOAT_SPEED * ev.step;
@@ -100,6 +103,13 @@ export class Game {
 
         // Update local transition, if active
         if (this.localTr.active) {
+
+            if (this.stuck) {
+
+                this.stuckWave = 
+                    (this.stuckWave + STUCK_WAVE_SPEED*ev.step) % 
+                    (Math.PI*2);
+            }
 
             this.localTr.update(ev);
             return;
@@ -233,7 +243,7 @@ export class Game {
                     this.textFloatValue);
 
             }
-    }
+        }
     }
 
 
@@ -246,6 +256,7 @@ export class Game {
         const OFFSET = 72;
         const STR = "STUCK";
         const MOVE = 64;
+        const WAVE_AMPLITUDE = -16;
 
         let mx = c.viewport.x/2;
         let my = c.viewport.y/2;
@@ -257,8 +268,7 @@ export class Game {
         let t = this.localTr.getScaledTime();
         if (this.localTr.fadeIn) {
 
-            t = Math.max(
-                1.0 - this.localTr.getScaledDelayTime(), t);
+            t = 1.0 - this.localTr.getScaledDelayTime();;
         }
 
         
@@ -269,7 +279,9 @@ export class Game {
 
             p = (t-d*(this.localTr.fadeIn ? i : (STR.length-1)-i))/d;
             p = clamp(p, 0, 1);
-            y = -MOVE + MOVE*p;
+            y = -MOVE + MOVE*p + 
+                Math.sin(this.stuckWave + i * Math.PI*2/STR.length) * 
+                WAVE_AMPLITUDE;
 
             c.setColor(1, 0.4, 0.0, p);
             c.drawScaledText(STR.charAt(i), 

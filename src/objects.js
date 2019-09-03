@@ -75,6 +75,31 @@ export class ObjectManager {
 
 
     //
+    // Creates a gol... ehm, star showers.
+    // Shower of stars, you know.
+    //
+    createStarShower(x, y, speed, n, r, d, col) {
+
+        const STAR_GRAV_BONUS = 4.0;
+
+        // Create stars
+        let angle = Math.random() * Math.PI * 2;
+        let step = Math.PI * 2 / n;    
+
+        for (let i = 0; i < n; ++ i) {
+
+            this.createStar(
+                    x, y,
+                    Math.cos(angle) * speed, 
+                    Math.sin(angle) * speed - STAR_GRAV_BONUS, 
+                    r, 1, col, d);
+
+            angle += step;
+        }
+    }
+
+
+    //
     // Sort objects by depth
     //
     sortObjects() {
@@ -108,20 +133,38 @@ export class ObjectManager {
         if (this.player != null) {
 
             this.player.update(stage, ev);
-            if (this.player.isStuck(stage, game)) {
-
-                game.restartTransition(true);
-                return;
-            }
         }
 
         // Update eggs
         for (let i = 0; i < this.eggs.length; ++ i) {
 
-            this.eggs[i].update(stage, ev);
             this.eggs[i].playerCollision(
                 this.player, this.eggFollowers,
                 this, stage);
+        }
+        // We want to update egg in a specific order
+        // to make dying work as intended
+        for (let i = this.eggFollowers.length-1; i >= 0; -- i ) {
+            this.eggFollowers[i].update(stage, ev);
+        }
+
+        // Check if stuck, or maybe reached the
+        // goal tile
+        if (this.player != null &&
+            !(this.eggsCollected() && 
+            this.player.finish(stage, this)) &&
+            this.player.isStuck(stage, game)) {
+
+            game.restartTransition(true);
+            return;
+        }
+
+        // Check if eggs are in the goal tile
+        // (Have to be done separately than the
+        //  basic update)
+        for (let i = this.eggFollowers.length-1; i >= 0; -- i ) {
+
+            this.eggFollowers[i].finish(stage, this);
         }
 
         // Update stars
@@ -152,7 +195,9 @@ export class ObjectManager {
     //
     isActive() {
 
-        return this.player.moving;
+        return this.player.moving || 
+            this.player.dying || 
+            !this.player.exist;
     }
 
 
@@ -161,7 +206,7 @@ export class ObjectManager {
     //
     eggsCollected() {
 
-        return this.eggCount == this.player.eggCount;
+        return this.player.eggCount == this.eggCount;
     }
 
 }

@@ -10,6 +10,9 @@ import { Tile } from "./stage.js";
 export const MOVE_TIME = 30;
 
 
+//
+// Movable object (i.e object that moves, really)
+//
 export class Movable {
 
     //
@@ -30,10 +33,34 @@ export class Movable {
         this.target = this.pos.clone();
         // Is moving
         this.moving = false;
+        // Does exist
+        this.exist = true;
 
         // Does follow something 
         this.follow = null;
+
+        // Death timer
+        this.deathTimer = 0.0;
+        this.dying = false;
     }
+
+
+    //
+    // Die
+    //
+    die(ev) {
+
+        if (!this.exist) return true;
+        if (!this.dying) return false;
+        
+        if ((this.deathTimer -= 1.0 * ev.step) <= 0) {
+
+            this.dying = false;
+            this.exist = false;
+        }
+        return true;
+    }
+
 
 
     //
@@ -62,5 +89,39 @@ export class Movable {
         this.rpos.x = (this.pos.x * t + (1-t) * this.target.x) * Tile.Width;
         this.rpos.y = (this.pos.y * t + (1-t) * this.target.y) * Tile.Height;
 
+    }
+
+
+    //
+    // Finish object
+    //
+    finish(stage, o) {
+
+        const STAR_COUNT = 6;
+        const STAR_SPEED = 4.0;
+        const STAR_RADIUS = 10;
+
+        if (this.dying || !this.exist) return true;
+
+        if (stage.isStartPos(this.pos.x, this.pos.y)) {
+
+            stage.updateSolid(this.pos.x, this.pos.y, 0);
+            this.deathTimer = MOVE_TIME;
+            this.dying = true;
+
+            // Create stars
+            // Create stars
+            o.createStarShower(
+                this.rpos.x + Tile.Width/2,
+                this.rpos.y + Tile.Height/2,
+                STAR_SPEED, 
+                 STAR_COUNT,
+                STAR_RADIUS, 
+                this.depth, 
+                [1, 1, 1] );
+
+            return true;
+        }
+        return false;
     }
 }

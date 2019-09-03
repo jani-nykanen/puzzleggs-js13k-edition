@@ -590,4 +590,13 @@ export class Stage {
 
         this.solid[y * this.w + x] = s;
     }
+
+
+    //
+    // Is in the start position
+    //
+    isStartPos(x, y) {
+
+        return this.getTile(x, y) == 2;
+    }
 }

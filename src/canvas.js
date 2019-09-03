@@ -139,6 +139,9 @@ export class Canvas extends Transform {
         // Resize now
         this.resize(window.innerWidth, 
             window.innerHeight);
+
+        // Global alpha
+        this.globalAlpha = 1.0;
     }
 
 
@@ -444,7 +447,7 @@ export class Canvas extends Transform {
         if (b == null) b = 1;
         if (a == null) a = 1;
 
-        this.activeShader.setColor(r, g, b, a);
+        this.activeShader.setColor(r, g, b, a * this.globalAlpha);
     }
 
 
@@ -459,5 +462,14 @@ export class Canvas extends Transform {
         this.activeShader.use();
         this.setColor(1, 1, 1, 1);
         this.useTransform();
+    }
+
+
+    //
+    // Set global alpha
+    //
+    setGlobalAlpha(a) {
+
+        this.globalAlpha = clamp(a, 0, 1);
     }
 }

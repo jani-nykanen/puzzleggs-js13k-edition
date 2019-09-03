@@ -27,31 +27,54 @@ export class Egg extends Movable {
     //
     update(stage, ev) {
 
+        if (this.die(ev)) return;
+
         if (this.follow != null) {
 
-            // If follower is moving
-            if (this.follow.moving) {
+            // If followed is dying
+            if (this.follow.dying) {
+
+                if (!this.moving) {
+
+                    this.pos = this.target.clone();
+                    this.target = this.follow.target.clone();
+                    this.moving = true;
+
+                    stage.updateSolid(this.pos.x, this.pos.y, 0);
+                }
+            }
+            // If followed is moving
+            else if (this.follow.moving)  {
 
                 // Set target to the position where the
                 // followed object just left (unless have the
                 // same position, or something else in there)
-                if (!this.moving && 
+                if (!this.moving &&
                     (this.pos.x != this.follow.pos.x ||
-                    this.pos.y != this.follow.pos.y) &&
-                    stage.getSolid(this.follow.pos.x, this.follow.pos.y) != 2) {
+                     this.pos.y != this.follow.pos.y) &&
+                     stage.getSolid(this.follow.pos.x, this.follow.pos.y) != 2) {
                     
                     this.target = this.follow.pos.clone();
                     this.moving = true;
 
                     stage.updateSolid(this.pos.x, this.pos.y, 0);
-                    stage.updateSolid(this.target.x, this.target.y, 2);
+
+                    if (!this.follow.dying) // Uncomment?
+                        stage.updateSolid(this.target.x, this.target.y, 2);
                 }
             }
 
             if (this.moving) {
 
-                // Copy move timer
-                this.moveTimer = this.follow.moveTimer;
+                // Copy death or move timer
+                if (this.follow.dying) {
+
+                    this.moveTimer = this.follow.deathTimer;
+                }
+                else {
+
+                    this.moveTimer = this.follow.moveTimer;
+                }
 
                 // Update shake 
                 this.shakeTimer = (1.0 - this.moveTimer / MOVE_TIME) * 
@@ -75,11 +98,9 @@ export class Egg extends Movable {
         const STAR_COUNT = 5;
         const STAR_SPEED = 4.0;
         const STAR_RADIUS = 10;
-        const STAR_GRAV_BONUS = 4.0;
 
-        if (this.follow != null) return;
+        if (this.follow != null || !this.exist) return;
 
-        let angle, step;
         if (pl.pos.x == this.pos.x && 
             pl.pos.y == this.pos.y) {
 
@@ -99,22 +120,14 @@ export class Egg extends Movable {
             ++ pl.eggCount;
 
             // Create stars
-            angle = Math.random() * Math.PI * 2;
-            step = Math.PI * 2 / STAR_COUNT;    
-
-            for (let i = 0; i < STAR_COUNT; ++ i) {
-
-                o.createStar(
-                        this.rpos.x + Tile.Width/2,
-                        this.rpos.y + Tile.Height/2,
-                        Math.cos(angle) * STAR_SPEED, 
-                        Math.sin(angle) * STAR_SPEED - STAR_GRAV_BONUS, 
-                        STAR_RADIUS, 
-                        1, [1.0, 0.25, 0.20],
-                        this.depth);
-
-                angle += step;
-            }
+            o.createStarShower(
+                    this.rpos.x + Tile.Width/2,
+                    this.rpos.y + Tile.Height/2,
+                    STAR_SPEED, 
+                     STAR_COUNT,
+                    STAR_RADIUS, 
+                    this.depth, 
+                    [1.0, 0.25, 0.20] );
 
             // Update solid data
             stage.updateSolid(this.pos.x, this.pos.y, 2);
@@ -149,6 +162,13 @@ export class Egg extends Movable {
         let my = this.rpos.y + Tile.Height/2 + BASE_OFF;
         let color = this.follow ? COLOR1 : COLOR2;
 
+        if (!this.exist) return;
+
+        if (this.dying) {
+
+            c.setGlobalAlpha(this.deathTimer/MOVE_TIME);
+        }
+
         // Draw shadow
         c.setColor(0, 0, 0, SHADOW_ALPHA);
         c.fillShape(Shape.Ellipse, 
@@ -176,6 +196,7 @@ export class Egg extends Movable {
             REF_RADIUS, REF_RADIUS);
 
         c.pop();
+        c.setGlobalAlpha(1);
     } 
 
 }
