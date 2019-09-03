@@ -53,13 +53,13 @@ export class Game {
     //
     restart(id) {
 
-        if (id == null)
-            id = this.id;
+        if (id != null)
+            this.id = id;
 
         // (Re)create an object manager
         this.objMan = new ObjectManager();
         // (Re)create a stage
-        this.stage = new Stage(id, this.objMan);
+        this.stage = new Stage(this.id, this.objMan);
     }
 
 

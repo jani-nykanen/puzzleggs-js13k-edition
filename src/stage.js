@@ -530,6 +530,15 @@ export class Stage {
 
 
     //
+    // Draw arrows
+    //
+    drawArrows(c, dir) {
+
+
+    }
+
+
+    //
     // Draw tiles
     //
     drawTiles(c, beaten) {
