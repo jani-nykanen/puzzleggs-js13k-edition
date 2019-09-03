@@ -155,7 +155,7 @@ export class ObjectManager {
             this.player.finish(stage, this)) &&
             this.player.isStuck(stage, game)) {
 
-            game.restartTransition(true);
+            game.restartTransition(1);
             return;
         }
 
@@ -207,6 +207,16 @@ export class ObjectManager {
     eggsCollected() {
 
         return this.player.eggCount == this.eggCount;
+    }
+
+
+    //
+    // Is the stage finished
+    //
+    stageFinished() {
+
+        return this.eggFollowers.length > 0 &&
+               !this.eggFollowers[0].exist;
     }
 
 }

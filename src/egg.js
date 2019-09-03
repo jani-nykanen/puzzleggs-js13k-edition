@@ -19,6 +19,7 @@ export class Egg extends Movable {
         super(x, y);
 
         this.shakeTimer = 0;
+        this.depth = this.rpos.y + Tile.Height/2 + 16;
     }
 
 

@@ -27,6 +27,8 @@ export class Game {
     // 
     constructor(gl) {
 
+        this.id = 1;
+
         // "Restart"
         this.restart();
 
@@ -49,12 +51,15 @@ export class Game {
     //
     // Restart stage
     //
-    restart() {
+    restart(id) {
+
+        if (id == null)
+            id = this.id;
 
         // (Re)create an object manager
         this.objMan = new ObjectManager();
         // (Re)create a stage
-        this.stage = new Stage(1, this.objMan);
+        this.stage = new Stage(id, this.objMan);
     }
 
 
@@ -66,9 +71,9 @@ export class Game {
         const STUCK_DELAY = 30;
         
         this.localTr.activate(
-            true, 2.0, 
+            true, stuck ? (3.0-stuck) : 2, 
             ...BG_COLOR, () => {this.restart();},
-            stuck ? STUCK_DELAY : null
+            STUCK_DELAY * stuck
         );
 
         this.stuck = stuck;
@@ -120,6 +125,14 @@ export class Game {
 
         // Update objects
         this.objMan.update(this.stage, this, ev);
+
+        // Go to the next stage, if stage finished
+        if (this.objMan.stageFinished()) {
+
+            ++ this.id;
+            this.restartTransition(2);
+            return;
+        }
 
         // Check restart key
         if (ev.input.getKey(Action.Reset) == State.Pressed) {
@@ -254,9 +267,10 @@ export class Game {
 
         const FONT_SCALE = 96;
         const OFFSET = 72;
-        const STR = "STUCK";
+        const STR = ["STUCK", "STAGE CLEAR"] [this.stuck -1];
         const MOVE = 64;
         const WAVE_AMPLITUDE = -16;
+        const COLOR = [ [1, 0.4, 0.0], [1, 1, 0.75]] [this.stuck -1];
 
         let mx = c.viewport.x/2;
         let my = c.viewport.y/2;
@@ -283,7 +297,7 @@ export class Game {
                 Math.sin(this.stuckWave + i * Math.PI*2/STR.length) * 
                 WAVE_AMPLITUDE;
 
-            c.setColor(1, 0.4, 0.0, p);
+            c.setColor(...COLOR, p);
             c.drawScaledText(STR.charAt(i), 
                 left + i * OFFSET, my - FONT_SCALE/2 + y,
                 0, 0, 
