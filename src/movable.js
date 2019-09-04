@@ -104,7 +104,8 @@ export class Movable {
         if (!o.eggsCollected()) return false;
         if (this.dying || !this.exist) return true;
 
-        if (stage.isStartPos(this.pos.x, this.pos.y)) {
+        if ((this.follow == null || !this.follow.exist) &&
+            stage.isStartPos(this.pos.x, this.pos.y)) {
 
             stage.updateSolid(this.pos.x, this.pos.y, 0);
             this.deathTimer = MOVE_TIME;

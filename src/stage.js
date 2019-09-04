@@ -14,6 +14,22 @@ export const Tile = {Width: 64, Height: 64};
 // Local constants
 const PORTAL_APPEAR_TIME = 30.0;
 const ARROW_TIME = 60;
+const WALL_COLORS_BLUE = [
+    [0.90, 0.95, 1.00],
+    [0.60, 0.80, 1.00], 
+    
+    [0.05, 0.25, 0.60],
+    [0.15, 0.45, 0.80],
+    [0.33, 0.67, 1.00],
+];
+const WALL_COLORS_RED = [
+    [1.00, 0.90, 0.95],
+    [1.00, 0.60, 0.80], 
+    
+    [0.60, 0.05, 0.25],
+    [0.80, 0.15, 0.45],
+    [1.00, 0.33, 0.67],
+];
 
 
 //
@@ -117,6 +133,7 @@ export class Stage {
 
                 // Wall
                 case 1:
+                case 8:
                     this.updateSolid(x, y, 1);
                     break;
 
@@ -191,35 +208,25 @@ export class Stage {
     //
     // Draw a wall tile
     //
-    drawWallTile(c, x, y) {
+    drawWallTile(c, x, y, id, colors) {
 
         const LEFT = 0;
         const TOP = 1;
         const RIGHT = 2;
         const BOTTOM = 3;
 
-        const COLORS = [
-            [0.90, 0.95, 1.00],
-            [0.60, 0.80, 1.00], 
-            
-            [0.05, 0.25, 0.60],
-            [0.15, 0.45, 0.80],
-            [0.33, 0.67, 1.00],
-        ];
-
-        
         let lw = Tile.Width/5;
         let lh = Tile.Height/5;
 
         let empty = [
-            this.getTile(x-1, y) != 1, // Left,
-            this.getTile(x, y-1) != 1, // Top
-            this.getTile(x+1, y) != 1, // Right,
-            this.getTile(x, y+1) != 1, // Bottom
+            this.getTile(x-1, y) != id, // Left,
+            this.getTile(x, y-1) != id, // Top
+            this.getTile(x+1, y) != id, // Right,
+            this.getTile(x, y+1) != id, // Bottom
         ]
 
         // Base shape
-        c.setColor(...COLORS[4]);
+        c.setColor(...colors[4]);
         c.fillShape(Shape.Rect,
             x * Tile.Width, y * Tile.Height,
             Tile.Width, Tile.Height);
@@ -227,7 +234,7 @@ export class Stage {
         // Right empty
         if (empty[RIGHT]) {
 
-            c.setColor(...COLORS[RIGHT]);
+            c.setColor(...colors[RIGHT]);
             c.fillShape(Shape.Rect,
                 x * Tile.Width + (Tile.Width-lw), 
                 y * Tile.Height,
@@ -236,7 +243,7 @@ export class Stage {
         // Bottom empty
         if (empty[BOTTOM]) {
 
-            c.setColor(...COLORS[BOTTOM]);
+            c.setColor(...colors[BOTTOM]);
             c.fillShape(Shape.Rect,
                 x * Tile.Width , 
                 y * Tile.Height + (Tile.Height-lh),
@@ -245,7 +252,7 @@ export class Stage {
             // Right empty
             if (empty[RIGHT]) {
 
-                c.setColor(...COLORS[RIGHT]);
+                c.setColor(...colors[RIGHT]);
                 c.fillShape(Shape.RAngledTriangle,
                     x * Tile.Width + (Tile.Width-lw), 
                     y * Tile.Height + (Tile.Height-lh),
@@ -255,7 +262,7 @@ export class Stage {
         // Left empty
         if (empty[LEFT]) {
 
-            c.setColor(...COLORS[LEFT]);
+            c.setColor(...colors[LEFT]);
             c.fillShape(Shape.Rect,
                 x * Tile.Width, 
                 y * Tile.Height,
@@ -264,7 +271,7 @@ export class Stage {
             // Bottom empty
             if (empty[BOTTOM]) {
 
-                c.setColor(...COLORS[BOTTOM]);
+                c.setColor(...colors[BOTTOM]);
                 c.fillShape(Shape.RAngledTriangle,
                     x * Tile.Width, 
                     y * Tile.Height + (Tile.Height-lh),
@@ -274,7 +281,7 @@ export class Stage {
         // Top empty
         if (empty[TOP]) {
 
-            c.setColor(...COLORS[TOP]);
+            c.setColor(...colors[TOP]);
             c.fillShape(Shape.Rect,
                 x * Tile.Width , 
                 y * Tile.Height,
@@ -283,7 +290,7 @@ export class Stage {
             // Left empty
             if (empty[LEFT]) {
 
-                c.setColor(...COLORS[LEFT]);
+                c.setColor(...colors[LEFT]);
                 c.fillShape(Shape.RAngledTriangle,
                     x * Tile.Width , 
                     y * Tile.Height,
@@ -292,7 +299,7 @@ export class Stage {
             // Right empty
             if (empty[RIGHT]) {
 
-                c.setColor(...COLORS[RIGHT]);
+                c.setColor(...colors[RIGHT]);
                 c.fillShape(Shape.RAngledTriangle,
                     x * Tile.Width + (Tile.Width-lw), 
                     y * Tile.Height,
@@ -314,15 +321,15 @@ export class Stage {
             k = MX[i];
             m = MY[i];
             if (!empty[i] && !empty[(i+1) % 4] &&
-                this.getTile(x - 1 + 2 * k, y - 1 + 2 * m) != 1) {
+                this.getTile(x - 1 + 2 * k, y - 1 + 2 * m) != id) {
 
-                c.setColor(...COLORS[i]);
+                c.setColor(...colors[i]);
                 c.fillShape(Shape.RAngledTriangle,
                     x * Tile.Width + (Tile.Width-lw) * k, 
                     y * Tile.Height + (Tile.Height-lh) * m,
                     lw * FX[i], lh * FY[i]);
 
-                c.setColor(...COLORS[(i+1) % 4]);
+                c.setColor(...colors[(i+1) % 4]);
                 c.fillShape(Shape.RAngledTriangle,
                     x * Tile.Width + (Tile.Width-lw) * k, 
                     y * Tile.Height + (Tile.Height-lh) * m,
@@ -338,22 +345,6 @@ export class Stage {
     //
     drawFloorPiece(c, x, y) {
 
-        const OUTLINE = 3.0;
-        const SHADOW_ALPHA = 0.25;
-        const SHADOW_LENGTH = 0.25;
-
-        // For laziness
-        let w = Tile.Width;
-        let h = Tile.Height;
-
-        // Empty tiles
-        let empty = [
-            this.getTile(x-1, y) != 1, // Left,
-            this.getTile(x, y-1) != 1, // Top
-            this.getTile(x+1, y) != 1, // Right,
-            this.getTile(x, y+1) != 1, // Bottom
-        ];
-
         // Draw base tiles
         if (x % 2 == y % 2) {
 
@@ -367,12 +358,34 @@ export class Stage {
             x * Tile.Width, y * Tile.Height,
             Tile.Width, Tile.Height);
 
+    }
+
+    //
+    // Draw floor "decorations"
+    // 
+    drawFloorDecorations(c, x, y) {
+
+        const OUTLINE = 3.0;
+        const SHADOW_ALPHA = 0.25;
+        const SHADOW_LENGTH = 0.25;
+
+        // For laziness
+        let w = Tile.Width;
+        let h = Tile.Height;
+
+        // Empty tiles
+        let empty = [
+            this.getSolid(x-1, y) != 1, // Left,
+            this.getSolid(x, y-1) != 1, // Top
+            this.getSolid(x+1, y) != 1, // Right,
+            this.getSolid(x, y+1) != 1, // Bottom
+        ];
 
         //
         // Draw shadows
         //
         c.setColor(0, 0, 0, SHADOW_ALPHA);
-        let corner = this.getTile(x-1, y-1) == 1;
+        let corner = this.getSolid(x-1, y-1) == 1;
         let d = SHADOW_LENGTH;
         let md = 1.0 - SHADOW_LENGTH;
 
@@ -481,7 +494,7 @@ export class Stage {
             k = MX[i];
             m = MY[i];
             if (empty[i] && empty[(i+1) % 4] &&
-                this.getTile(x - 1 + 2 * k, y - 1 + 2 * m) == 1) {
+                this.getSolid(x - 1 + 2 * k, y - 1 + 2 * m) == 1) {
 
                 c.fillShape(Shape.Rect,
                     x*w + k * (w - OUTLINE),
@@ -589,6 +602,112 @@ export class Stage {
 
 
     //
+    // Draw dash-lined tile
+    //
+    drawDashLinedTile(c, x, y) {
+
+        const OUTLINE = 8;
+        const WIDTH = 16;
+        const OFFSET = 8;
+        
+        let dx = x * Tile.Width;
+        let dy = y * Tile.Height;
+
+        c.setColor(0.60, 0.05, 0.25);
+        for (let j = 0; j < 2; ++ j) {
+            for (let i = 0; i <= 2; ++ i) {
+
+                // Horizontal
+                c.fillShape(Shape.Rect,
+                    dx + (WIDTH+OFFSET)*i,
+                    dy + (Tile.Height-OUTLINE)*j,
+                    WIDTH, OUTLINE);
+
+                // Vertical
+                c.fillShape(Shape.Rect,
+                    dx + (Tile.Width-OUTLINE)*j,
+                    dy + (WIDTH+OFFSET)*i,
+                    OUTLINE, WIDTH);
+            }
+        }
+    }
+
+
+    //
+    // Draw a button
+    //
+    drawButton(c, x, y, off) {
+
+        const OUTLINE = 3
+        const WIDTH = 20;
+        const HEIGHT = 10;
+        const SHADOW_WIDTH = 26;
+        const SHADOW_HEIGHT = 18;
+        const SHADOW_OFF_X = 2;
+        const SHADOW_OFF_Y = 0;
+        // What is "varsi" in English
+        const THING_HEIGHT = 16;
+
+        let mx = (x+0.5)*Tile.Width;
+        let my = (y+0.5)*Tile.Height + THING_HEIGHT/2;
+
+        // Draw shadow
+        if (!off) {
+
+            c.setColor(0, 0, 0, 0.25);
+            c.push();
+            c.translate(
+                mx + SHADOW_OFF_X, my + SHADOW_OFF_Y);
+            c.rotate(Math.PI/12);
+            c.useTransform();
+
+            c.fillShape(Shape.Ellipse,
+                0, 0, 
+                SHADOW_WIDTH, SHADOW_HEIGHT);
+
+            c.pop();
+        }
+
+        // Draw base button
+        c.setColor(0, 0, 0);
+        for (let i = 1; i >= 0; -- i) {
+
+        
+            // Bottom of that thing
+            if (i == 0) {
+
+                if (off)
+                    c.setColor(0.80, 0.15, 0.45);
+                else
+                    c.setColor(0.60, 0.05, 0.25);
+            }
+            c.fillShape(Shape.Ellipse,
+                 mx, my, 
+                WIDTH + OUTLINE*i, HEIGHT+ OUTLINE*i);
+
+            if (!off) {
+
+                // That thing
+                c.fillShape(Shape.Rect, 
+                    mx-WIDTH-OUTLINE*i, 
+                    my-THING_HEIGHT- OUTLINE*i, 
+                    (WIDTH+OUTLINE*i)*2, 
+                    THING_HEIGHT+ OUTLINE*2*i);
+                
+                // Ellipse
+                if (i == 0) 
+                    c.setColor(1.00, 0.33, 0.67);
+                
+                c.fillShape(Shape.Ellipse,
+                    mx, my-THING_HEIGHT, 
+                    WIDTH+ OUTLINE*i, HEIGHT+ OUTLINE*i);
+            }
+
+        }
+    }
+
+
+    //
     // Draw tiles
     //
     drawTiles(c, beaten) {
@@ -605,7 +724,12 @@ export class Stage {
 
                 // Wall
                 case 1:
-                    this.drawWallTile(c, x, y);
+                    this.drawWallTile(c, x, y, 1, WALL_COLORS_BLUE);
+                    break;
+
+                // Red wall, on
+                case 8:
+                    this.drawWallTile(c, x, y, 8, WALL_COLORS_RED);
                     break;
 
                 // Floor
@@ -613,7 +737,10 @@ export class Stage {
 
                     // Draw base floor tile
                     this.drawFloorPiece(c, x, y);
-                        
+
+                    // 
+                    // TODO: Nested switch? Own function for these?
+                    //
                     // Draw starting/ending tile
                     if (t == 2) {
 
@@ -633,6 +760,25 @@ export class Stage {
                     else if (t >= 4 && t <= 7) {
 
                         this.drawArrows(c, x, y, t-4);
+                    }
+                    // Draw dashed line
+                    else if (t == 9) {
+
+                        this.drawDashLinedTile(c, x, y);
+                    }
+                    // Draw button (pressed)
+                    else if(t == 11) {
+
+                        this.drawButton(c, x, y, true)
+                    }
+
+                    // Draw "decorations"
+                    this.drawFloorDecorations(c, x, y);
+
+                    // Draw button (not pressed)
+                    if(t == 10 ) {
+
+                        this.drawButton(c, x, y, false)
                     }
 
                     break;
@@ -689,7 +835,7 @@ export class Stage {
 
 
     //
-    // Get automatic movement
+    // Get automatic movement (and other auto-stuff)
     //
     autoMovement(o) {
 
@@ -702,6 +848,26 @@ export class Stage {
             t = new Vector2(o.pos.x, o.pos.y);
             t.x += [0, 1, 0, -1] [id-4];
             t.y += [-1, 0, 1, 0] [id-4];
+        }
+        // Button
+        else if(id == 10) {
+
+            for (let i = 0; i < this.w*this.h; ++ i) {
+
+                // Toggle buttons
+                if (this.data[i] == 10 || this.data[i] == 11) {
+                    
+                    this.data[i] = (this.data[i] == 10) ? 11 : 10;
+                }
+                // Toggle walls (if no egg there)
+                else if(this.solid[i] != 2 && 
+                    (this.data[i] == 8 || this.data[i] == 9)) {
+
+                    this.data[i] = (this.data[i] == 8) ? 9 : 8;
+                    this.solid[i] = !this.solid[i];
+                }
+            }
+            return null;
         }
 
         return t;
