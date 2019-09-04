@@ -13,6 +13,7 @@ export const Tile = {Width: 64, Height: 64};
 
 // Local constants
 const PORTAL_APPEAR_TIME = 30.0;
+const ARROW_TIME = 60;
 
 
 //
@@ -55,6 +56,9 @@ export class Stage {
         // Start position center (rendering-wise)
         this.startPos = new Vector2();
 
+        // Timer for arrow animation
+        this.arrowTimer = 0;
+
         // Parse objects
         this.parseObjects(o);
     }
@@ -74,9 +78,15 @@ export class Stage {
     //
     // Is a tile solid
     //
-    isSolid(x, y) {
+    isSolid(x, y, dir) {
 
-        return this.solid[y * this.w + x] > 0;
+        let s = this.solid[y * this.w + x];
+        if (dir != null && s >= 4 && s <= 7) {
+
+            return dir == s-4;
+        }
+
+        return s == 1 || s == 2;
     }
 
 
@@ -120,6 +130,14 @@ export class Stage {
                 // Egg
                 case 3:
                     o.createEgg(x, y);
+                    break;
+
+                // Arrow
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                    this.updateSolid(x, y, t);
                     break;
             
                 default:
@@ -532,9 +550,39 @@ export class Stage {
     //
     // Draw arrows
     //
-    drawArrows(c, dir) {
+    drawArrows(c, x, y, dir) {
 
+        const OUTLINE = 4;
+        const WIDTH = 36 - OUTLINE;
+        const HEIGHT = 14 - OUTLINE;
+        const POS_Y = -14;
+        const Y_OFF = 26;
+        const COLOR = [ [0.67, 1, 0.67], [0.0, 0.67, 0.0] ];
 
+        c.push();
+        c.translate((x+0.5) * Tile.Width, 
+            (y+0.5) * Tile.Height);
+        c.rotate(dir * Math.PI/2);
+        c.useTransform();
+
+        // Determine color position
+        let cpos = this.arrowTimer <= ARROW_TIME/2 ? 0 : 1;
+
+        // Draw arrow signs
+        for (let i = 0; i < 2; ++ i) {
+
+            c.setColor(...[0, 0.33, 0]);
+            c.fillShape(Shape.EquilTriangle, 
+                0, POS_Y + Y_OFF * i, 
+                WIDTH+OUTLINE, HEIGHT+OUTLINE);
+
+            c.setColor(...COLOR[(i+cpos)%2]);
+            c.fillShape(Shape.EquilTriangle, 
+                0, POS_Y + Y_OFF * i, 
+                WIDTH-OUTLINE*2, HEIGHT);    
+        }
+
+        c.pop();
     }
 
 
@@ -579,6 +627,11 @@ export class Stage {
                             this.drawPortal(c, x, y, 1.0 - s);
                         }
                     }
+                    // Draw arrow
+                    else if (t >= 4 && t <= 7) {
+
+                        this.drawArrows(c, x, y, t-4);
+                    }
 
                     break;
                 }
@@ -608,6 +661,10 @@ export class Stage {
             this.portalTimer = 
                 (this.portalTimer + PORTAL_SPEED*ev.step) % 1;
         }
+
+        // Update arrows
+        this.arrowTimer = 
+            (this.arrowTimer + ev.step) % ARROW_TIME;
     }
 
 
@@ -626,5 +683,25 @@ export class Stage {
     isStartPos(x, y) {
 
         return this.getTile(x, y) == 2;
+    }
+
+
+    //
+    // Get automatic movement
+    //
+    autoMovement(o) {
+
+        let t = null;
+        let id = this.getTile(o.pos.x, o.pos.y);
+        
+        // Arrows
+        if (id >= 4 && id <= 7) {
+
+            t = new Vector2(o.pos.x, o.pos.y);
+            t.x += [0, 1, 0, -1] [id-4];
+            t.y += [-1, 0, 1, 0] [id-4];
+        }
+
+        return t;
     }
 }

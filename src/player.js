@@ -24,6 +24,8 @@ export class Player extends Movable {
         this.headAngle = 0;
         this.eggCount = 0;
         this.legTimer = 0;
+    
+        this.autoMove = false;
     }
 
 
@@ -37,10 +39,10 @@ export class Player extends Movable {
         let x = this.pos.x | 0;
         let y = this.pos.y | 0;
 
-        return stage.isSolid(x-1, y) &&
-               stage.isSolid(x+1, y) &&
-               stage.isSolid(x, y-1) &&
-               stage.isSolid(x, y+1); 
+        return stage.isSolid(x-1, y, 1) &&
+               stage.isSolid(x+1, y, 3) &&
+               stage.isSolid(x, y-1, 2) &&
+               stage.isSolid(x, y+1, 0); 
     }
 
 
@@ -55,27 +57,47 @@ export class Player extends Movable {
         // No controls if moving
         if (this.moving) return;
 
-        // Check arrow keys
-        if (ev.input.getKey(Action.Left) == State.Down) {
+        this.autoMove  = false;
 
-            -- tx;
+        // Check auto movement
+        let v = stage.autoMovement(this);
+        let dir = null;
+        if (v == null) {
+
+            // Check arrow keys
+            if (ev.input.getKey(Action.Left) == State.Down) {
+
+                -- tx;
+                dir = 1;
+            }
+            else if (ev.input.getKey(Action.Right) == State.Down) {
+
+                ++ tx;
+                dir = 3;
+            }
+            else if (ev.input.getKey(Action.Up) == State.Down) {
+
+                -- ty;
+                dir = 2;
+            }
+            else if (ev.input.getKey(Action.Down) == State.Down) {
+
+                ++ ty;
+                dir = 0;
+            }
+
         }
-        else if (ev.input.getKey(Action.Right) == State.Down) {
+        else {
+            
+            tx = v.x;
+            ty = v.y;
 
-            ++ tx;
-        }
-        else if (ev.input.getKey(Action.Up) == State.Down) {
-
-            -- ty;
-        }
-        else if (ev.input.getKey(Action.Down) == State.Down) {
-
-            ++ ty;
+            this.autoMove = true;
         }
 
         // If target changed and possible, move to this
         // position (or actually, start moving)
-        if (!stage.isSolid(tx, ty) && (
+        if (!stage.isSolid(tx, ty, dir) && (
             tx != (this.pos.x | 0) || ty != (this.pos.y | 0) )) {
 
             this.moving = true;
@@ -95,7 +117,7 @@ export class Player extends Movable {
         const LEG_SPEED = HEAD_SPEED;
         const HEAD_STILL_SPEED = 0.05;
 
-        if (this.moving) {
+        if (this.moving && !this.autoMove) {
 
             // Update head angle & leg timer
             this.headAngle += HEAD_SPEED* ev.step;

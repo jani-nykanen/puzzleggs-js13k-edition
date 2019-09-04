@@ -101,6 +101,7 @@ export class Movable {
         const STAR_SPEED = 4.0;
         const STAR_RADIUS = 10;
 
+        if (!o.eggsCollected()) return false;
         if (this.dying || !this.exist) return true;
 
         if (stage.isStartPos(this.pos.x, this.pos.y)) {

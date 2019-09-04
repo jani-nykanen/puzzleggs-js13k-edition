@@ -27,7 +27,7 @@ export class Game {
     // 
     constructor(gl) {
 
-        this.id = 1;
+        this.id = 2;
 
         // "Restart"
         this.restart();
@@ -53,7 +53,7 @@ export class Game {
     //
     restart(id) {
 
-        if (id != null)
+        if (id != null && id > 0)
             this.id = id;
 
         // (Re)create an object manager
