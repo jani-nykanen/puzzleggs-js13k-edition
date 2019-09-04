@@ -80,13 +80,15 @@ export class Stage {
     //
     isSolid(x, y, dir) {
 
-        let s = this.solid[y * this.w + x];
-        if (dir != null && s >= 4 && s <= 7) {
+        let s;
+        if (dir != null) {
 
-            return dir == s-4;
+            s = this.getTile(x, y);
+            if (s >= 4 && s <= 7) 
+                return dir == s-4;
         }
 
-        return s == 1 || s == 2;
+        return this.solid[y * this.w + x] > 0;
     }
 
 
