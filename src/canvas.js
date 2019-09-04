@@ -78,6 +78,7 @@ export const Shape = {
     Cog: 4,
     Egg: 5,
     Star: 6,
+    HalfCircle: 7,
 };
 
 
@@ -170,6 +171,7 @@ export class Canvas extends Transform {
                 Math.cos(t-Math.PI)], 
                 EGG_PREC), // Egg
             sgen.star(5, STAR_JUMP), // Star
+            sgen.regPoly(CIRCLE_PREC, CIRCLE_PREC/2), // Half a circle
         ];
     }
 

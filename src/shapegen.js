@@ -95,7 +95,7 @@ export class ShapeGen {
         }
 
         // Compute indices
-        let end = n * 3;
+        let end = m * 3;
         if (min) end *= 2;
         for (let i = 0; i < end; ++ i) {
 

@@ -42,6 +42,9 @@ export class Movable {
         // Death timer
         this.deathTimer = 0.0;
         this.dying = false;
+
+        // End functions
+        this.endFun = null;
     }
 
 
@@ -66,7 +69,7 @@ export class Movable {
     //
     // Move
     //
-    move(ev) {
+    move(ev, stage) {
 
         // Not moving, not interested
         if (!this.moving) return;
@@ -78,10 +81,16 @@ export class Movable {
         // Check if stopped moving
         if (this.moveTimer <= 0) {
 
+            // Call end function
+            if (this.endFun != null) {
+
+                this.endFun(stage);
+            }
+
             this.moveTimer = 0.0;
             this.moving = false;
 
-            this.pos = this.target.clone();
+            this.pos = this.target.clone();   
         }
 
         // Compute render pos

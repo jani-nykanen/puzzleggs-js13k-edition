@@ -1,6 +1,7 @@
 import { Player } from "./player.js";
 import { Egg } from "./egg.js";
 import { Star } from "./star.js";
+import { Monster } from "./monster.js";
 
 //
 // Game object manager
@@ -19,6 +20,7 @@ export class ObjectManager {
 
         this.player = null;
         this.eggs = [];
+        this.monsters = [];
         this.eggFollowers = [];
 
         this.stars = new Array(STAR_COUNT);
@@ -54,6 +56,15 @@ export class ObjectManager {
         this.eggs.push(new Egg(x, y));
 
         ++ this.eggCount;
+    }
+
+
+    //
+    // Create a monster
+    //
+    createMonster(x, y, dir) {
+
+        this.monsters.push(new Monster(x, y, dir));
     }
 
 
@@ -148,6 +159,12 @@ export class ObjectManager {
             this.eggFollowers[i].update(stage, ev);
         }
 
+        // Update monsters
+        for (let i = 0; i < this.monsters.length; ++ i) {
+
+            this.monsters[i].update(this.player, stage, ev);
+        }
+
         // Check if stuck, or maybe reached the
         // goal tile
         if (this.player != null &&
@@ -182,6 +199,13 @@ export class ObjectManager {
 
         // Sort objects
         this.sortObjects();
+
+        // Draw monsters (no need for sorting)
+        for (let i = 0; i < this.monsters.length; ++ i) {
+
+            this.monsters[i].draw(c);
+        }
+
         // Draw sorted objects
         for (let i = 0; i < this.depthList.length; ++ i) {
 

@@ -158,6 +158,16 @@ export class Stage {
                 case 7:
                     this.updateSolid(x, y, t);
                     break;
+
+                // Monster
+                case 12:
+                case 13:
+                case 14:
+                case 15:
+
+                    this.updateSolid(x, y, 2);
+                    o.createMonster(x, y, t-12);
+                    break;
             
                 default:
                     break;
@@ -535,7 +545,7 @@ export class Stage {
     drawPortal(c, x, y, s) {
 
         const LOOP = 4;
-        const OUTLINE = 3;
+        const OUTLINE = 0;
 
         let w = Tile.Width - OUTLINE*2;
         let h = Tile.Height - OUTLINE*2;

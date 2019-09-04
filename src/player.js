@@ -104,6 +104,10 @@ export class Player extends Movable {
             this.moveTimer = MOVE_TIME;
             this.target.x = tx;
             this.target.y = ty;
+
+            // TODO: Might cause problems? Check this.
+            stage.updateSolid(this.pos.x, this.pos.y, 0);
+            stage.updateSolid(tx, ty, 2);
         }
     }
 
@@ -139,7 +143,7 @@ export class Player extends Movable {
         }
     }
 
-
+    
     //
     // Update
     //
