@@ -29,7 +29,7 @@ export class Egg extends Movable {
     update(stage, ev) {
 
         if (this.die(ev)) return;
-
+        
         if (this.follow != null) {
 
             // If followed is dying
@@ -80,6 +80,10 @@ export class Egg extends Movable {
                 // Update shake 
                 this.shakeTimer = (1.0 - this.moveTimer / MOVE_TIME) * 
                     (this.pos.x % 2 == this.pos.y % 2 == 0 ? 1 : -1);
+            }
+            else {
+
+                stage.updateSolid(this.pos.x, this.pos.y, 2);
             }
         }
 

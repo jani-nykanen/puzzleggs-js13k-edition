@@ -156,14 +156,6 @@ export class Stage {
                     o.createEgg(x, y);
                     break;
 
-                // Arrow
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    this.updateSolid(x, y, t);
-                    break;
-
                 // Monster
                 case 12:
                 case 13:

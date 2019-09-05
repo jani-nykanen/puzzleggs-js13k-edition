@@ -27,7 +27,7 @@ export class Game {
     // 
     constructor(gl) {
 
-        this.id = 5;
+        this.id = 6;
 
         // "Restart"
         this.restart();
