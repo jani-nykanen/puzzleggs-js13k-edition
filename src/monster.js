@@ -101,6 +101,8 @@ export class Monster extends Movable {
 
         const MIN_ANGLE = Math.PI / 16.0;
         const MAX_ANGLE = Math.PI / 3.0;
+        const RADIUS = 24;
+        const OUTLINE = 3;
 
         let t = this.moveTimer / MOVE_TIME;
         let angle = MIN_ANGLE + (MAX_ANGLE-MIN_ANGLE)*Math.abs(t-0.5);
@@ -113,17 +115,25 @@ export class Monster extends Movable {
 
         c.setColor(1, 0, 0);
 
-        c.push();
-        c.rotate(angle);
-        c.useTransform();
-        c.fillShape(Shape.HalfCircle, 0, 0, 24, 24);
-        c.pop();
+        for (let j = 1; j >= 0; -- j) {
 
-        c.push();
-        c.rotate(-angle);
-        c.useTransform();
-        c.fillShape(Shape.HalfCircle, -24, -24, -24, -24);
-        c.pop();
+            if (j == 0)
+                c.setColor(1, 0, 0);
+            else
+                c.setColor(0, 0, 0);
+
+            for (let i = 0; i < 2; ++ i) {
+
+                c.push();
+                c.rotate(angle * (1 - 2*i));
+                c.useTransform();
+                c.fillShape(Shape.HalfCircle, 
+                    -RADIUS*i - OUTLINE*j*i, -RADIUS*i - OUTLINE*j*i, 
+                    RADIUS-2*RADIUS*i + OUTLINE*j * (1-2*i), 
+                    RADIUS-2*RADIUS*i + OUTLINE*j * (1-2*i));
+                c.pop();
+            }
+        }
 
         c.pop();
     }
