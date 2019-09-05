@@ -94,7 +94,7 @@ export class Stage {
     //
     // Is a tile solid
     //
-    isSolid(x, y, dir) {
+    isSolid(x, y, dir, egg) {
 
         let s;
         if (dir != null) {
@@ -104,6 +104,10 @@ export class Stage {
                 return dir == s-4;
         }
 
+
+        s = this.solid[y * this.w + x];
+        if (egg && s < 0)
+            return true;
         return this.solid[y * this.w + x] > 0;
     }
 
@@ -148,6 +152,7 @@ export class Stage {
 
                 // Egg
                 case 3:
+                    this.updateSolid(x, y, -1);
                     o.createEgg(x, y);
                     break;
 
@@ -858,6 +863,8 @@ export class Stage {
             t = new Vector2(o.pos.x, o.pos.y);
             t.x += [0, 1, 0, -1] [id-4];
             t.y += [-1, 0, 1, 0] [id-4];
+
+            if (this.isSolid(t.x, t.y)) return null;
         }
         // Button
         else if(id == 10) {

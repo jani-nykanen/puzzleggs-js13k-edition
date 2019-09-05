@@ -23,9 +23,6 @@ export class Monster extends Movable {
         // the moving timer is not changed
         // when the frame is updated
         this.follow = 1;
-
-        // Height timer
-        this.heightTimer = Math.random() * Math.PI*2;
         
     }
 
@@ -46,13 +43,13 @@ export class Monster extends Movable {
         ty += DIR_Y[this.dir];
 
         let d;
-        if (stage.isSolid(tx, ty)) {
+        if (stage.isSolid(tx, ty, null, true)) {
 
             d = NEXT_DIR[this.dir];
             tx = this.pos.x + DIR_X[d];
             ty = this.pos.y + DIR_Y[d];
 
-            if (stage.isSolid(tx, ty))
+            if (stage.isSolid(tx, ty, null, true))
                 return;
             this.dir = d;
         }
@@ -69,8 +66,6 @@ export class Monster extends Movable {
     // Update
     //
     update(pl, stage, ev) {
-    
-        const HEIGHT_MOD_SPEED = 0.025;
 
         if (this.moving && 
             stage.isSolid(this.target.x, this.target.y)) {
@@ -91,9 +86,6 @@ export class Monster extends Movable {
                 this.findTarget(stage);
         }
 
-        // Update height
-        this.heightTimer = 
-            (this.heightTimer + HEIGHT_MOD_SPEED) % (Math.PI*2);
     }
 
 
@@ -193,10 +185,10 @@ export class Monster extends Movable {
     //
     draw(c) {
 
-        let h = 3 - Math.sin(this.heightTimer);
+        const HEIGHT = -2;
 
-        this.drawBody(c, 0, 0, [0,0,0]);
-        this.drawBody(c, -h, -h);
+        this.drawBody(c, 0, 0, [0,0,0, 0.25]);
+        this.drawBody(c, HEIGHT, HEIGHT);
         
     }
 }
