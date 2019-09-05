@@ -23,6 +23,9 @@ export class Monster extends Movable {
         // the moving timer is not changed
         // when the frame is updated
         this.follow = 1;
+
+        // Height timer
+        this.heightTimer = Math.random() * Math.PI*2;
         
     }
 
@@ -67,6 +70,8 @@ export class Monster extends Movable {
     //
     update(pl, stage, ev) {
     
+        const HEIGHT_MOD_SPEED = 0.025;
+
         if (this.moving && 
             stage.isSolid(this.target.x, this.target.y)) {
 
@@ -86,11 +91,100 @@ export class Monster extends Movable {
                 this.findTarget(stage);
         }
 
-        
-        
+        // Update height
+        this.heightTimer = 
+            (this.heightTimer + HEIGHT_MOD_SPEED) % (Math.PI*2);
+    }
 
-        // ...
-        
+
+    //
+    // Draw body
+    //
+    drawBody(c, dx, dy, overrideColor) {
+
+        const MIN_ANGLE = Math.PI / 16.0;
+        const MAX_ANGLE = Math.PI / 4.0;
+        const RADIUS = 24;
+        const OUTLINE = 3;
+        const EYE_X = -12;
+        const EYE_Y = 10;
+        const EYE_RADIUS = 7;
+        const REFLECTION_RADIUS = 2.5;
+        const REFL_X = [-2, -2, 2, 2] [this.dir];
+        const REFL_Y = [2, -2, -2, 2] [this.dir];
+
+        let t = this.moving ? this.moveTimer / MOVE_TIME : 0;
+        let mouthAngle = 
+            MIN_ANGLE + (MAX_ANGLE-MIN_ANGLE)*(Math.abs(t-0.5)/0.5);
+        let swimAngle = Math.sin(t * Math.PI) * Math.PI / 6;
+        if (this.pos.x % 2 == this.pos.y % 2)
+            swimAngle *= -1;
+
+
+        c.push();
+        c.translate(this.rpos.x + Tile.Width/2 + dx, 
+            this.rpos.y + Tile.Height/2 + dy);
+        c.rotate(swimAngle + Math.PI / 2 * (this.dir-1));
+        c.scale(-1, 1);
+        c.useTransform();
+
+        if (overrideColor)
+            c.setColor(...overrideColor);
+
+        for (let j = 1; j >= 0; -- j) {
+
+            if (!overrideColor) {
+
+                if (j == 0)
+                    c.setColor(0.80, 0.67, 1.0);
+                else
+                    c.setColor(0, 0, 0);
+            }
+
+            for (let i = 0; i < 2; ++ i) {
+
+                // Draw head half
+                c.push();
+                c.rotate(mouthAngle * (1 - 2*i));
+                c.useTransform();
+
+                // Bottom for outline
+                if (j == 1) {
+
+                    c.fillShape(Shape.Rect, -RADIUS-OUTLINE, -OUTLINE * (1-i), 
+                        RADIUS*2+OUTLINE*2, OUTLINE);
+                }
+
+                // Halfed circle
+                c.fillShape(Shape.HalfCircle, 
+                    -RADIUS*i - OUTLINE*j*i, -RADIUS*i - OUTLINE*j*i, 
+                    RADIUS-2*RADIUS*i + OUTLINE*j * (1-2*i), 
+                    RADIUS-2*RADIUS*i + OUTLINE*j * (1-2*i));
+
+                c.pop();
+            }
+        }
+
+        if (!overrideColor) {
+
+            // Draw eyes
+            for (let i = 0; i < 2; ++ i) {
+                
+                c.setColor(0, 0, 0);
+                c.fillShape(Shape.Ellipse, 
+                    EYE_X, (-1 + i*2)*EYE_Y, 
+                    EYE_RADIUS, EYE_RADIUS);
+
+                c.setColor();
+                c.fillShape(Shape.Ellipse, 
+                    EYE_X + REFL_X, 
+                    (-1 + i*2)*EYE_Y + REFL_Y, 
+                    REFLECTION_RADIUS,
+                    REFLECTION_RADIUS);
+            }
+        }
+
+        c.pop();
     }
 
 
@@ -99,42 +193,10 @@ export class Monster extends Movable {
     //
     draw(c) {
 
-        const MIN_ANGLE = Math.PI / 16.0;
-        const MAX_ANGLE = Math.PI / 3.0;
-        const RADIUS = 24;
-        const OUTLINE = 3;
+        let h = 3 - Math.sin(this.heightTimer);
 
-        let t = this.moveTimer / MOVE_TIME;
-        let angle = MIN_ANGLE + (MAX_ANGLE-MIN_ANGLE)*Math.abs(t-0.5);
-
-        c.push();
-        c.translate(this.rpos.x + Tile.Width/2, 
-            this.rpos.y + Tile.Height/2 );
-        c.rotate(Math.PI / 2 * (this.dir-1));
-        c.useTransform();
-
-        c.setColor(1, 0, 0);
-
-        for (let j = 1; j >= 0; -- j) {
-
-            if (j == 0)
-                c.setColor(1, 0, 0);
-            else
-                c.setColor(0, 0, 0);
-
-            for (let i = 0; i < 2; ++ i) {
-
-                c.push();
-                c.rotate(angle * (1 - 2*i));
-                c.useTransform();
-                c.fillShape(Shape.HalfCircle, 
-                    -RADIUS*i - OUTLINE*j*i, -RADIUS*i - OUTLINE*j*i, 
-                    RADIUS-2*RADIUS*i + OUTLINE*j * (1-2*i), 
-                    RADIUS-2*RADIUS*i + OUTLINE*j * (1-2*i));
-                c.pop();
-            }
-        }
-
-        c.pop();
+        this.drawBody(c, 0, 0, [0,0,0]);
+        this.drawBody(c, -h, -h);
+        
     }
 }
