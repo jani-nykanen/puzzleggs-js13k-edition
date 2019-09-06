@@ -105,21 +105,25 @@ export class Stage {
     //
     // Is a tile solid
     //
-    isSolid(x, y, dir, egg) {
+    isSolid(x, y, dir, egg, keys) {
 
-        let s;
+        let s = this.solid[y * this.w + x];
+        let t = this.getTile(x, y);
         if (dir != null) {
 
-            s = this.getTile(x, y);
-            if (s >= 4 && s <= 7 &&
-                dir == s-4) 
+            if (t >= 4 && t <= 7 &&
+                dir == t-4) 
                 return true;
         }
 
-        s = this.solid[y * this.w + x];
         if (egg && s < 0)
             return true;
-        return this.solid[y * this.w + x] > 0;
+        if (keys != null && keys > 0 &&
+            t == 16) {
+
+            return false;
+        }
+        return s > 0;
     }
 
 
@@ -973,7 +977,15 @@ export class Stage {
     //
     updateSolid(x, y, s) {
 
+        let b = false;
+        if (s == 2 && this.getTile(x, y) == 16) {
+
+            this.data[y * this.w + x] = 0;
+            b = true;
+        }
+
         this.solid[y * this.w + x] = s;
+        return b;
     }
 
 
@@ -1004,7 +1016,7 @@ export class Stage {
             if (this.isSolid(t.x, t.y)) return null;
         }
         // Button
-        else if(id == 10) {
+        else if (id == 10) {
 
             for (let i = 0; i < this.w*this.h; ++ i) {
 
@@ -1022,6 +1034,12 @@ export class Stage {
                 }
             }
             return null;
+        }
+        // Key
+        else if (id == 17) {
+
+            this.data[o.pos.y*this.w + o.pos.x] = 0;
+            ++ o.keyCount;
         }
 
         return t;

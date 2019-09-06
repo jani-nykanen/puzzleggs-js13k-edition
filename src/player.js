@@ -24,7 +24,8 @@ export class Player extends Movable {
         this.headAngle = 0;
         this.eggCount = 0;
         this.legTimer = 0;
-    
+        this.keyCount = 0;
+
         this.autoMove = false;
     }
 
@@ -37,10 +38,10 @@ export class Player extends Movable {
         let x = this.pos.x | 0;
         let y = this.pos.y | 0;
 
-        return stage.isSolid(x-1, y, 1) &&
-               stage.isSolid(x+1, y, 3) &&
-               stage.isSolid(x, y-1, 2) &&
-               stage.isSolid(x, y+1, 0); 
+        return stage.isSolid(x-1, y, 1, null, this.keyCount) &&
+               stage.isSolid(x+1, y, 3, null, this.keyCount) &&
+               stage.isSolid(x, y-1, 2, null, this.keyCount) &&
+               stage.isSolid(x, y+1, 0, null, this.keyCount); 
     }
 
 
@@ -114,7 +115,7 @@ export class Player extends Movable {
 
         // If target changed and possible, move to this
         // position (or actually, start moving)
-        if (!stage.isSolid(tx, ty, dir) && (
+        if (!stage.isSolid(tx, ty, dir, null, this.keyCount) && (
             tx != (this.pos.x | 0) || ty != (this.pos.y | 0) )) {
 
             this.moving = true;
@@ -124,7 +125,12 @@ export class Player extends Movable {
 
             // TODO: Might cause problems? Check this.
             stage.updateSolid(this.pos.x, this.pos.y, 0);
-            stage.updateSolid(tx, ty, 2);
+
+            // Return true only if a lock is opened with a key
+            if (stage.updateSolid(tx, ty, 2)) {
+
+                -- this.keyCount;
+            }
         }
     }
 
