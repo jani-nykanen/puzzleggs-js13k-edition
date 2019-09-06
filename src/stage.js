@@ -83,6 +83,9 @@ export class Stage {
         // Timer for arrow animation
         this.arrowTimer = 0;
 
+        // Key height timer
+        this.keyHeightTimer = 0.0;
+
         // Parse objects
         this.parseObjects(o);
     }
@@ -752,6 +755,95 @@ export class Stage {
 
 
     //
+    // Draw a key body
+    // (we save some room by not making
+    //  key a separate object)
+    //
+    drawKeyBody(c, x, y, dx, dy, col) {
+
+        const OUTLINE = 3;
+        const HOLE_SCALE = 0.5;
+        const TOP_WIDTH = 14;
+        const TOP_HEIGHT = 10;
+        const TOP_Y = -12;
+        const HANDLE_WIDTH = 10;
+        const HANDLE_HEIGHT = 32;
+        const HANDLE_Y = -8;
+        const TOOTH_HEIGHT = 6;
+        const TOOTH_WIDTH = 10;
+
+        let mx = (x + 0.5) * Tile.Width + dx;
+        let my = (y + 0.5) * Tile.Height + dy;
+
+        c.push();
+        c.translate(mx, my);
+        c.rotate(-Math.PI / 6.0);
+        c.useTransform();
+
+        for (let i = 1; i >= (col ? 1 : 0); -- i) {
+
+            if (col)
+                c.setColor(...col)
+            else if (i == 1)
+                c.setColor(0, 0, 0);
+            else 
+                c.setColor(1, 0.90, 0.2);
+
+            // Top
+            c.fillShape(Shape.Ellipse, 0, TOP_Y, 
+                TOP_WIDTH + OUTLINE*i, TOP_HEIGHT + OUTLINE*i);
+
+            // "Handle"
+            c.fillShape(Shape.Rect, 
+                -HANDLE_WIDTH/2-OUTLINE*i, 
+                HANDLE_Y-OUTLINE*i, 
+                HANDLE_WIDTH+OUTLINE*i*2, 
+                HANDLE_HEIGHT+OUTLINE*i*2);
+
+            // Teeth
+            for (let j = 0; j < 2; ++ j) {
+
+                c.fillShape(Shape.Rect, 
+                    HANDLE_WIDTH/2+OUTLINE*i,
+                    TOOTH_HEIGHT-OUTLINE*i + TOOTH_HEIGHT*2 * j, 
+                    TOOTH_WIDTH, 
+                    TOOTH_HEIGHT+OUTLINE*i*2);
+            }
+
+            // Hole
+            if (i == 0) {
+
+                c.setColor(0, 0, 0);
+                c.fillShape(Shape.Ellipse,
+                        0, TOP_Y, 
+                        TOP_WIDTH*HOLE_SCALE, 
+                        TOP_HEIGHT*HOLE_SCALE);
+            }
+        }
+
+        c.pop();
+    }
+
+
+    //
+    // Draw a key (with shadow)
+    //
+    drawKey(c, x, y) {
+
+        const HEIGHT_BASE = 4;
+        const HEIGHT_VARY = 2;
+        
+        let h = HEIGHT_BASE + 
+            Math.sin(
+                this.keyHeightTimer + (x+y)*Math.PI/this.w) * 
+                HEIGHT_VARY;
+
+        this.drawKeyBody(c, x, y, 0, 0, [0, 0, 0, 0.25]);
+        this.drawKeyBody(c, x, y, -h, -h);
+    }
+
+
+    //
     // Draw tiles
     //
     drawTiles(c, beaten) {
@@ -829,6 +921,11 @@ export class Stage {
 
                         this.drawButton(c, x, y, false)
                     }
+                    // Draw key
+                    else if(t == 17) {
+
+                        this.drawKey(c, x, y);
+                    }
 
                     break;
                 }
@@ -843,6 +940,7 @@ export class Stage {
     update(beaten, ev) {
 
         const PORTAL_SPEED = 0.025;
+        const KEY_HEIGHT_DELTA = 0.05;
 
         // Update portal
         if (beaten) {
@@ -862,6 +960,11 @@ export class Stage {
         // Update arrows
         this.arrowTimer = 
             (this.arrowTimer + ev.step) % ARROW_TIME;
+
+        // Update key heights
+        this.keyHeightTimer = 
+            (this.keyHeightTimer + KEY_HEIGHT_DELTA*ev.step) % 
+            (Math.PI*2);
     }
 
 
