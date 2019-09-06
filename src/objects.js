@@ -143,7 +143,7 @@ export class ObjectManager {
         // Update player
         if (this.player != null) {
 
-            this.player.update(stage, ev);
+            this.player.update(stage, this, ev);
         }
 
         // Update eggs
@@ -241,6 +241,15 @@ export class ObjectManager {
 
         return this.eggFollowers.length > 0 &&
                !this.eggFollowers[0].exist;
+    }
+
+
+    //
+    // Get player key count
+    //
+    getPlayerKeyCount() {
+
+        return this.player.keyCount;
     }
 
 }

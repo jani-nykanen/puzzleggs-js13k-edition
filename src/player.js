@@ -54,7 +54,7 @@ export class Player extends Movable {
 
         if (this.isSurrounded(stage)) {
 
-            this.control(stage, null, true);
+            this.control(stage, null, null, true);
             if (this.isSurrounded(stage)) {
 
                 return true;
@@ -67,7 +67,11 @@ export class Player extends Movable {
     //
     // Control
     //
-    control(stage, ev, autoOnly) {
+    control(stage, ev, objm, autoOnly) {
+
+        const STAR_SPEED = 4;
+        const STAR_COUNT = 5;
+        const STAR_RADIUS = 10;
 
         let tx = this.pos.x | 0;
         let ty = this.pos.y | 0;
@@ -78,7 +82,7 @@ export class Player extends Movable {
         this.autoMove  = false;
 
         // Check auto movement
-        let v = stage.autoMovement(this);
+        let v = stage.autoMovement(this, objm);
         let dir = null;
         if (v == null && !autoOnly) {
 
@@ -130,6 +134,13 @@ export class Player extends Movable {
             if (stage.updateSolid(tx, ty, 2)) {
 
                 -- this.keyCount;
+
+                // Create stars
+                objm.createStarShower(
+                    (tx+0.5)*Tile.Width,
+                    (ty+0.5)*Tile.Height,
+                    STAR_SPEED, STAR_COUNT, 
+                    STAR_RADIUS, 1, [1, 1, 1]);
             }
         }
     }
@@ -170,12 +181,12 @@ export class Player extends Movable {
     //
     // Update
     //
-    update(stage, ev) {
+    update(stage, objm, ev) {
 
         if (this.die(ev)) return;
 
         // Control
-        this.control(stage, ev);
+        this.control(stage, ev, objm);
         // Move
         this.move(ev);
         // Animate

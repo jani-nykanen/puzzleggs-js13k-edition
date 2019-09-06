@@ -1,6 +1,7 @@
 import { MapData } from "./mapdata.js";
 import { Shape } from "./canvas.js";
 import { Vector2 } from "./vector.js";
+import { ShapeRenderer } from "./shaperenderer.js";
 
 //
 // Stage
@@ -85,6 +86,9 @@ export class Stage {
 
         // Key height timer
         this.keyHeightTimer = 0.0;
+
+        // Create a shape renderer
+        this.srend = new ShapeRenderer(Tile.Width, Tile.Height);
 
         // Parse objects
         this.parseObjects(o);
@@ -759,96 +763,7 @@ export class Stage {
 
 
     //
-    // Draw a key body
-    // (we save some room by not making
-    //  key a separate object)
-    //
-    drawKeyBody(c, x, y, dx, dy, col) {
-
-        const OUTLINE = 3;
-        const HOLE_SCALE = 0.5;
-        const TOP_WIDTH = 14;
-        const TOP_HEIGHT = 10;
-        const TOP_Y = -12;
-        const HANDLE_WIDTH = 10;
-        const HANDLE_HEIGHT = 32;
-        const HANDLE_Y = -8;
-        const TOOTH_HEIGHT = 6;
-        const TOOTH_WIDTH = 10;
-
-        let mx = (x + 0.5) * Tile.Width + dx;
-        let my = (y + 0.5) * Tile.Height + dy;
-
-        c.push();
-        c.translate(mx, my);
-        c.rotate(-Math.PI / 6.0);
-        c.useTransform();
-
-        for (let i = 1; i >= (col ? 1 : 0); -- i) {
-
-            if (col)
-                c.setColor(...col)
-            else if (i == 1)
-                c.setColor(0, 0, 0);
-            else 
-                c.setColor(1, 0.90, 0.2);
-
-            // Top
-            c.fillShape(Shape.Ellipse, 0, TOP_Y, 
-                TOP_WIDTH + OUTLINE*i, TOP_HEIGHT + OUTLINE*i);
-
-            // "Handle"
-            c.fillShape(Shape.Rect, 
-                -HANDLE_WIDTH/2-OUTLINE*i, 
-                HANDLE_Y-OUTLINE*i, 
-                HANDLE_WIDTH+OUTLINE*i*2, 
-                HANDLE_HEIGHT+OUTLINE*i*2);
-
-            // Teeth
-            for (let j = 0; j < 2; ++ j) {
-
-                c.fillShape(Shape.Rect, 
-                    HANDLE_WIDTH/2+OUTLINE*i,
-                    TOOTH_HEIGHT-OUTLINE*i + TOOTH_HEIGHT*2 * j, 
-                    TOOTH_WIDTH, 
-                    TOOTH_HEIGHT+OUTLINE*i*2);
-            }
-
-            // Hole
-            if (i == 0) {
-
-                c.setColor(0, 0, 0);
-                c.fillShape(Shape.Ellipse,
-                        0, TOP_Y, 
-                        TOP_WIDTH*HOLE_SCALE, 
-                        TOP_HEIGHT*HOLE_SCALE);
-            }
-        }
-
-        c.pop();
-    }
-
-
-    //
-    // Draw a key (with shadow)
-    //
-    drawKey(c, x, y) {
-
-        const HEIGHT_BASE = 4;
-        const HEIGHT_VARY = 2;
-        
-        let h = HEIGHT_BASE + 
-            Math.sin(
-                this.keyHeightTimer + (x+y)*Math.PI/this.w) * 
-                HEIGHT_VARY;
-
-        this.drawKeyBody(c, x, y, 0, 0, [0, 0, 0, 0.25]);
-        this.drawKeyBody(c, x, y, -h, -h);
-    }
-
-
-    //
-    // Draw tiles
+    // Draw tiles (and some objects)
     //
     drawTiles(c, beaten) {
 
@@ -928,7 +843,10 @@ export class Stage {
                     // Draw key
                     else if(t == 17) {
 
-                        this.drawKey(c, x, y);
+                        //this.drawKey(c, x, y);
+                        this.srend.drawKey(c, 
+                            (x+0.5)*Tile.Width, (y+0.5)*Tile.Height, 
+                            this.keyHeightTimer + (x+y)*Math.PI*2/this.w);
                     }
 
                     break;
@@ -1001,7 +919,11 @@ export class Stage {
     //
     // Get automatic movement (and other auto-stuff)
     //
-    autoMovement(o) {
+    autoMovement(o, objm) {
+
+        const LOCK_STAR_COUNT = 4;
+        const LOCK_STAR_SPEED = 4;
+        const LOCK_STAR_RADIUS = 12;
 
         let t = null;
         let id = this.getTile(o.pos.x, o.pos.y);
@@ -1040,6 +962,11 @@ export class Stage {
 
             this.data[o.pos.y*this.w + o.pos.x] = 0;
             ++ o.keyCount;
+
+            objm.createStarShower(
+                o.rpos.x+Tile.Width/2,o.rpos.y+Tile.Height/2,
+                LOCK_STAR_SPEED, LOCK_STAR_COUNT, 
+                LOCK_STAR_RADIUS, 1, [1, 1, 0.5]);
         }
 
         return t;

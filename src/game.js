@@ -5,6 +5,7 @@ import { MOVE_TIME } from "./movable.js";
 import { Transition } from "./transition.js";
 import { Action, State } from "./input.js";
 import { negMod, clamp } from "./util.js";
+import { ShapeRenderer } from "./shaperenderer.js";
 
 //
 // Game scene
@@ -14,6 +15,7 @@ import { negMod, clamp } from "./util.js";
 
 // Local constants
 const BG_COLOR = [0.33, 0.67, 1.00];
+const KEY_APPEAR_TIME = 30;
 
 
 //
@@ -45,6 +47,14 @@ export class Game {
         this.stuck = 0;
         // Stuck wave
         this.stuckWave = 0.0;
+
+        // Shape renderer
+        this.srend = new ShapeRenderer();
+
+        // Old key count & appearance timer
+        this.oldKeyCount = 0;
+        this.keyAppearTimer = 0;
+        this.appearDir = 0;
     }
 
 
@@ -120,6 +130,14 @@ export class Game {
 
             this.localTr.update(ev);
             return;
+        }
+
+        // Update key appearing timer
+        if (this.appearDir != 0 && 
+            ( (this.keyAppearTimer -= ev.step) <= 0)) {
+
+            this.appearDir = 0;
+            this.keyAppearTimer = 0.0;
         }
 
         // Update stage
@@ -331,6 +349,66 @@ export class Game {
 
 
     //
+    // Draw keys
+    //
+    drawKeys(c) {
+
+        const WIDTH = 128;
+        const HEIGHT = 128;
+
+        let sx = WIDTH / Tile.Width;
+        let sy = HEIGHT / Tile.Height;
+
+        let dx = 64;
+        let dy = c.viewport.y / 3;
+        let n =  this.objMan.getPlayerKeyCount();
+        
+        // If key count changed, appearing time!
+        if (n != this.oldKeyCount && 
+            this.appearDir == 0) {
+
+            this.appearDir = n < this.oldKeyCount ? -1 : 1;
+            this.keyAppearTimer = KEY_APPEAR_TIME;
+        }
+        // Store old key count
+        this.oldKeyCount = n;
+
+        // Stop here, if nothing to draw
+        if (n <= 0 && this.appearDir == 0) return;
+
+        // Draw one extra key if something is
+        // disappearing
+        if (this.appearDir == -1)
+            ++ n;
+
+        c.toggleTexturing(false);
+
+        // Compute alpha
+        let alpha =  1.0;
+        if (this.appearDir != 0) {
+
+            alpha = this.keyAppearTimer / KEY_APPEAR_TIME;
+            if (this.appearDir == 1)
+                alpha = 1.0 - alpha;
+        }
+        
+        // Draw keys
+        for (let i = 0; i < n; ++ i) {
+
+            c.setGlobalAlpha(i == n-1 ? alpha : 1);
+
+            this.srend.drawKey(c, 
+                dx, dy + i * WIDTH, 0, 
+                sx, sy);
+        }
+
+        c.setGlobalAlpha(1);
+        c.toggleTexturing(true);
+   
+    }
+
+
+    //
     // Draw the game scene
     //
     draw(c) {
@@ -392,5 +470,8 @@ export class Game {
 
         // Draw stage info
         this.drawStageInfo(c);
+    
+        // Draw keys
+        this.drawKeys(c);
     }
 }
