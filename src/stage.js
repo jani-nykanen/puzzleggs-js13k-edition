@@ -893,7 +893,7 @@ export class Stage {
         else if (id == 10 || id == 18) {
 
             if (id == 18)
-                this.arrowTimer = ARROW_TIME - this.arrowTimer;
+                this.arrowTimer = (this.arrowTimer + ARROW_TIME) % ARROW_TIME;
 
             for (let i = 0; i < this.w*this.h; ++ i) {
 
