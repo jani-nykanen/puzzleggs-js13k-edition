@@ -892,6 +892,9 @@ export class Stage {
         // Button
         else if (id == 10 || id == 18) {
 
+            if (id == 18)
+                this.arrowTimer = ARROW_TIME - this.arrowTimer;
+
             for (let i = 0; i < this.w*this.h; ++ i) {
 
                 // Toggle buttons
