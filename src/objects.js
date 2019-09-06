@@ -171,7 +171,7 @@ export class ObjectManager {
             !(this.eggsCollected() && 
             this.player.finish(stage, this)) &&
             this.player.isStuck(stage, game)) {
-
+                
             game.restartTransition(1);
             return;
         }

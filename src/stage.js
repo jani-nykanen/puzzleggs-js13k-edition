@@ -30,6 +30,14 @@ const WALL_COLORS_RED = [
     [0.80, 0.15, 0.45],
     [1.00, 0.33, 0.67],
 ];
+const WALL_COLORS_GRAY = [
+    [0.95, 0.95, 0.95],
+    [0.80, 0.80, 0.80], 
+    
+    [0.30, 0.30, 0.30],
+    [0.46, 0.46, 0.46],
+    [0.67, 0.67, 0.67],
+];
 
 
 //
@@ -100,10 +108,10 @@ export class Stage {
         if (dir != null) {
 
             s = this.getTile(x, y);
-            if (s >= 4 && s <= 7) 
-                return dir == s-4;
+            if (s >= 4 && s <= 7 &&
+                dir == s-4) 
+                return true;
         }
-
 
         s = this.solid[y * this.w + x];
         if (egg && s < 0)
@@ -138,6 +146,7 @@ export class Stage {
                 // Wall
                 case 1:
                 case 8:
+                case 16:
                     this.updateSolid(x, y, 1);
                     break;
 
@@ -715,6 +724,34 @@ export class Stage {
 
 
     //
+    // Draw lock
+    //
+    drawLock(c, x, y) {
+
+        const CIRCLE_Y = -8;
+        const BOTTOM_Y = 4;
+        const CIRCLE_RADIUS = 8;
+        const BOTTOM_W = 12;
+        const BOTTOM_H = 16;
+
+        let mx = (x + 0.5) * Tile.Width;
+        let my = (y + 0.5) * Tile.Height;
+
+        // Draw background tile
+        this.drawWallTile(c, x, y, -1, WALL_COLORS_GRAY);
+
+        // Draw keyhole
+        c.setColor(0, 0, 0);
+        c.fillShape(Shape.Ellipse, 
+            mx, my+CIRCLE_Y, 
+            CIRCLE_RADIUS, CIRCLE_RADIUS);
+        c.fillShape(Shape.EquilTriangle, 
+            mx, my+BOTTOM_Y, 
+            BOTTOM_W, BOTTOM_H);
+    }
+
+
+    //
     // Draw tiles
     //
     drawTiles(c, beaten) {
@@ -737,6 +774,11 @@ export class Stage {
                 // Red wall, on
                 case 8:
                     this.drawWallTile(c, x, y, 8, WALL_COLORS_RED);
+                    break;
+
+                // Lock
+                case 16:
+                    this.drawLock(c, x, y);
                     break;
 
                 // Floor

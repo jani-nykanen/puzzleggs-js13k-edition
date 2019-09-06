@@ -30,11 +30,9 @@ export class Player extends Movable {
 
 
     //
-    // Check if stuck
+    // Check nearby walls
     //
-    isStuck(stage) {
-
-        if (this.moving) return false;
+    isSurrounded(stage) {
 
         let x = this.pos.x | 0;
         let y = this.pos.y | 0;
@@ -47,9 +45,28 @@ export class Player extends Movable {
 
 
     //
+    // Check if stuck
+    //
+    isStuck(stage) {
+
+        if (this.moving) return false;
+
+        if (this.isSurrounded(stage)) {
+
+            this.control(stage, null, true);
+            if (this.isSurrounded(stage)) {
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    //
     // Control
     //
-    control(stage, ev) {
+    control(stage, ev, autoOnly) {
 
         let tx = this.pos.x | 0;
         let ty = this.pos.y | 0;
@@ -62,7 +79,7 @@ export class Player extends Movable {
         // Check auto movement
         let v = stage.autoMovement(this);
         let dir = null;
-        if (v == null) {
+        if (v == null && !autoOnly) {
 
             // Check arrow keys
             if (ev.input.getKey(Action.Left) == State.Down) {
@@ -87,7 +104,7 @@ export class Player extends Movable {
             }
 
         }
-        else {
+        else if(v != null) {
             
             tx = v.x;
             ty = v.y;
