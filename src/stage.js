@@ -39,6 +39,16 @@ const WALL_COLORS_GRAY = [
     [0.46, 0.46, 0.46],
     [0.67, 0.67, 0.67],
 ];
+const BUTTON_COLOR_PURPLE = [
+    [0.80, 0.15, 0.45],
+    [0.60, 0.05, 0.25],
+    [1.00, 0.33, 0.67],
+];
+const BUTTON_COLOR_GREEN = [
+    [0.33, 1.0, 0.33],
+    [0.00, 0.67, 0.00],
+    [0.67, 1.00, 0.67],
+];
 
 
 //
@@ -661,80 +671,6 @@ export class Stage {
 
 
     //
-    // Draw a button
-    //
-    drawButton(c, x, y, off) {
-
-        const OUTLINE = 3
-        const WIDTH = 20;
-        const HEIGHT = 10;
-        const SHADOW_WIDTH = 26;
-        const SHADOW_HEIGHT = 18;
-        const SHADOW_OFF_X = 2;
-        const SHADOW_OFF_Y = 0;
-        // What is "varsi" in English
-        const THING_HEIGHT = 16;
-
-        let mx = (x+0.5)*Tile.Width;
-        let my = (y+0.5)*Tile.Height + THING_HEIGHT/2;
-
-        // Draw shadow
-        if (!off) {
-
-            c.setColor(0, 0, 0, 0.25);
-            c.push();
-            c.translate(
-                mx + SHADOW_OFF_X, my + SHADOW_OFF_Y);
-            c.rotate(Math.PI/12);
-            c.useTransform();
-
-            c.fillShape(Shape.Ellipse,
-                0, 0, 
-                SHADOW_WIDTH, SHADOW_HEIGHT);
-
-            c.pop();
-        }
-
-        // Draw base button
-        c.setColor(0, 0, 0);
-        for (let i = 1; i >= 0; -- i) {
-
-        
-            // Bottom of that thing
-            if (i == 0) {
-
-                if (off)
-                    c.setColor(0.80, 0.15, 0.45);
-                else
-                    c.setColor(0.60, 0.05, 0.25);
-            }
-            c.fillShape(Shape.Ellipse,
-                 mx, my, 
-                WIDTH + OUTLINE*i, HEIGHT+ OUTLINE*i);
-
-            if (!off) {
-
-                // That thing
-                c.fillShape(Shape.Rect, 
-                    mx-WIDTH-OUTLINE*i, 
-                    my-THING_HEIGHT- OUTLINE*i, 
-                    (WIDTH+OUTLINE*i)*2, 
-                    THING_HEIGHT+ OUTLINE*2*i);
-                
-                // Ellipse
-                if (i == 0) 
-                    c.setColor(1.00, 0.33, 0.67);
-                
-                c.fillShape(Shape.Ellipse,
-                    mx, my-THING_HEIGHT, 
-                    WIDTH+ OUTLINE*i, HEIGHT+ OUTLINE*i);
-            }
-
-        }
-    }
-
-
-    //
     // Draw lock
     //
     drawLock(c, x, y) {
@@ -827,18 +763,34 @@ export class Stage {
                         this.drawDashLinedTile(c, x, y);
                     }
                     // Draw button (pressed)
-                    else if(t == 11) {
+                    // Purple
+                    else if (t == 11) {
 
-                        this.drawButton(c, x, y, true)
+                        this.srend.drawButton(c, x, y, true, 
+                            BUTTON_COLOR_PURPLE)
+                    }
+                    // Green
+                    else if (t == 19) {
+
+                        this.srend.drawButton(c, x, y, true, 
+                            BUTTON_COLOR_GREEN)
                     }
 
                     // Draw "decorations"
                     this.drawFloorDecorations(c, x, y);
 
                     // Draw button (not pressed)
-                    if(t == 10 ) {
+                    // Purple
+                    if (t == 10 ) {
 
-                        this.drawButton(c, x, y, false)
+                        this.srend.drawButton(c, x, y, false,
+                            BUTTON_COLOR_PURPLE)
+                    }
+                    // Green
+                    else if (t == 18 ) {
+
+                        this.srend.drawButton(c, x, y, false,
+                            BUTTON_COLOR_GREEN)
                     }
                     // Draw key
                     else if(t == 17) {
@@ -938,27 +890,34 @@ export class Stage {
             if (this.isSolid(t.x, t.y)) return null;
         }
         // Button
-        else if (id == 10) {
+        else if (id == 10 || id == 18) {
 
             for (let i = 0; i < this.w*this.h; ++ i) {
 
                 // Toggle buttons
-                if (this.data[i] == 10 || this.data[i] == 11) {
+                if (this.data[i] == id || this.data[i] == id+1) {
                     
-                    this.data[i] = (this.data[i] == 10) ? 11 : 10;
+                    this.data[i] = (this.data[i] == id) ? id+1 : id;
                 }
                 // Toggle walls (if no egg there)
-                else if(this.solid[i] != 2 && 
+                else if(id == 10 &&
+                    this.solid[i] != 2 && 
                     (this.data[i] == 8 || this.data[i] == 9)) {
 
                     this.data[i] = (this.data[i] == 8) ? 9 : 8;
                     this.solid[i] = !this.solid[i];
                 }
+                // Turn arrow floors around
+                else if(id == 18 &&
+                    this.data[i] >= 4 && this.data[i] <= 7) {
+
+                    this.data[i] = 4 + (((this.data[i]-4)+2)%4);
+                }
             }
             return null;
         }
         // Key
-        else if (id == 17) {
+        else if (objm != null && id == 17) {
 
             this.data[o.pos.y*this.w + o.pos.x] = 0;
             ++ o.keyCount;

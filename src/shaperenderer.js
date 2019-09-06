@@ -20,6 +20,79 @@ export class ShapeRenderer {
 
 
     //
+    // Draw a button
+    //
+    drawButton(c, x, y, off, col) {
+
+        const OUTLINE = 3
+        const WIDTH = 20;
+        const HEIGHT = 10;
+        const SHADOW_WIDTH = 26;
+        const SHADOW_HEIGHT = 18;
+        const SHADOW_OFF_X = 2;
+        const SHADOW_OFF_Y = 0;
+        // What is "varsi" in English in this context?
+        const THING_HEIGHT = 16;
+
+        let mx = (x+0.5)*this.w;
+        let my = (y+0.5)*this.h + THING_HEIGHT/2;
+
+        // Draw shadow
+        if (!off) {
+
+            c.setColor(0, 0, 0, 0.25);
+            c.push();
+            c.translate(
+                mx + SHADOW_OFF_X, my + SHADOW_OFF_Y);
+            c.rotate(Math.PI/12);
+            c.useTransform();
+
+            c.fillShape(Shape.Ellipse,
+                0, 0, 
+                SHADOW_WIDTH, SHADOW_HEIGHT);
+
+            c.pop();
+        }
+
+        // Draw base button
+        c.setColor(0, 0, 0);
+        for (let i = 1; i >= 0; -- i) {
+
+            // Bottom of that thing
+            if (i == 0) {
+
+                if (off)
+                    c.setColor(...col[0]);
+                else
+                    c.setColor(...col[1]);
+            }
+            c.fillShape(Shape.Ellipse,
+                 mx, my, 
+                WIDTH + OUTLINE*i, HEIGHT+ OUTLINE*i);
+
+            if (!off) {
+
+                // That thing
+                c.fillShape(Shape.Rect, 
+                    mx-WIDTH-OUTLINE*i, 
+                    my-THING_HEIGHT- OUTLINE*i, 
+                    (WIDTH+OUTLINE*i)*2, 
+                    THING_HEIGHT+ OUTLINE*2*i);
+                
+                // Ellipse
+                if (i == 0) 
+                    c.setColor(...col[2]);
+                
+                c.fillShape(Shape.Ellipse,
+                    mx, my-THING_HEIGHT, 
+                    WIDTH+ OUTLINE*i, HEIGHT+ OUTLINE*i);
+            }
+
+        }
+    }
+
+
+    //
     // Draw a key body
     //
     drawKeyBody(c, x, y, sx, sy, col) {
