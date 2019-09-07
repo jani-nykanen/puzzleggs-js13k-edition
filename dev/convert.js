@@ -11,20 +11,14 @@ let RLE = (data, layer) => {
     ", data: [";
     let len = 1;
     let d = layer[0];
-    for (let i = 1; i < layer.length; ++ i) {
+    for (let y = 1; y < data.height-1; ++ y) {
 
-        if (layer[i] != d) {
+        for (let x = 1; x < data.width-1; ++ x) {
 
-            out += String(len) + "," + String(d) + ",";
-            d = layer[i];
-            len = 1;
-        }
-        else {
-
-            ++ len;
+            out += String(layer[y*data.width+x]) + ",";
         }
     }
-    out += String(len) + "," + String(d) + "]},";
+    out += "]},";
 
     return out;
 }

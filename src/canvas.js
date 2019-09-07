@@ -117,6 +117,7 @@ export class Canvas extends Transform {
         this.initGL();
 
         // Create shapes
+        this.shapes = null;
         this.createShapes();
 
         // Build shaders

@@ -66,17 +66,16 @@ export class Stage {
 
         // Decode RLE-packed data
         this.data = new Array(src.w * src.h);
-        let d, len;
-        let k = 0;
-        for (let i = 0; i < src.data.length -1; i += 2) {
+        this.data.fill(1);
+        for (let y = 0; y < src.h-2; ++ y) {
 
-            len = src.data[i];
-            d =   src.data[i+1];
-            for (let j = 0; j < len; ++ j) {
+            for (let x = 0; x < src.w-2; ++ x) {
 
-                this.data[k ++] = d;
+                this.data[(y+1)*src.w+(x+1)] = 
+                    src.data[y*(src.w-2) + x];
             }
         }
+        
         this.w = src.w;
         this.h = src.h;
 
