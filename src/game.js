@@ -34,6 +34,8 @@ export class Game {
         this.id = 13;
 
         // "Restart"
+        this.objMan = null;
+        this.stage = null;
         this.restart();
 
         // Cog angle
@@ -211,10 +213,10 @@ export class Game {
 
 
         // TODO: TEMPORARY, REMOVE THIS!
-        //if (ev.input.getKey(65) == State.Pressed) {
+        if (ev.input.getKey(65) == State.Pressed) {
         //
-        //    this.restartTransition(2, ev);
-        //}
+            this.restartTransition(2, ev);
+        }
         
     }
 
@@ -293,7 +295,9 @@ export class Game {
     //
     drawStageInfo(c) {
 
-        const TEXT = ["STAGE " + String(Math.min(13,this.id)), "Password: NONE"];
+        const TEXT = 
+            ["STAGE " + String(Math.min(MapData.length ,this.id)), 
+            "Password: NONE"];
 
         const POS_Y = 4;
 

@@ -14,9 +14,9 @@ You managed to save
 all your precious
 eggs - the children
 unborn! Now you can
-go back home and...
+go back home...
       
-...eat 'em all!
+...and eat 'em all!
 `;
 
 
@@ -85,7 +85,7 @@ export class Ending {
 
         const VIEW_TARGET = 720.0;
         const FONT_SIZE = [48, 96] [this.phase];
-        const FONT_OFF = [-24, -16] [this.phase];
+        const FONT_OFF = [-24, -20] [this.phase];
         const AMPLUTIDE = 3.0;
         const PERIOD = Math.PI*2 / ([8, 4] [this.phase]);
 
@@ -108,7 +108,7 @@ export class Ending {
             my -= 8*FONT_SIZE/2;
         }
         let str = 
-            this.phase == 0 ? ENDING_TEXT.substr(0, this.charIndex) : "THE END";
+            this.phase == 0 ? ENDING_TEXT.substr(0, this.charIndex) : "The End";
 
         c.setColor(1, 1, 0.5);
         c.drawScaledText(

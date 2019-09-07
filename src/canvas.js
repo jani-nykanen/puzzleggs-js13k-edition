@@ -383,7 +383,7 @@ export class Canvas extends Transform {
 
         if (center) {
 
-            dx -= (str.length/ 2.0 * (cw + xoff) * usx);
+            dx -= ((str.length+1)/ 2.0 * (cw + xoff) * usx);
             x = dx;
         }
 
