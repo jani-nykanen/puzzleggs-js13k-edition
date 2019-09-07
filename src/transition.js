@@ -89,12 +89,16 @@ export class Transition {
         if (!this.active || this.delayTimer > 0) 
             return;
 
+        let s = c.toggleTexturing(false);
         let t = this.getScaledTime();
         c.setColor(this.color.r, 
                    this.color.g, 
                    this.color.b, 
                    t);
         c.fillShape(Shape.Rect, 0, 0, c.viewport.x, c.viewport.y);
+
+        if (s)
+            c.toggleTexturing(true);
     }
 
 

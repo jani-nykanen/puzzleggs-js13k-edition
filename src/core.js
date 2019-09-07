@@ -1,5 +1,6 @@
 import { Input } from "./input.js";
 import { Canvas } from "./canvas.js";
+import { Transition } from "./transition.js";
 
 //
 // Application core
@@ -23,15 +24,22 @@ export class Core {
         this.frameRate = 30;
         this.target = 0;
 
+
         // Put event stuff here. Whatever that means,
         // anyway
         this.ev = {
 
+            // About passing a reference to this:
             // Not the proper way to do this, but I have 
             // no intend to add fancy scene managers, they
-            // just require a lot of room
+            // just require a lot of room (in other)
             core: this,
+
+            // ...and here are some managers I was not too lazy
+            // to implement!
             input: new Input(),
+            tr: new Transition(),
+
         };
 
         // Create a canvas
@@ -77,6 +85,8 @@ export class Core {
 
             // Update input
             this.ev.input.update();
+            // Update transition
+            this.ev.tr.update(this.ev);
 
             this.timeSum -= this.target;
         }
@@ -90,6 +100,9 @@ export class Core {
 
                 this.activeScene.draw(this.canvas);
             }
+
+            // Draw global transition
+            this.ev.tr.draw(this.canvas);
         }
 
         this.oldTime = ts;

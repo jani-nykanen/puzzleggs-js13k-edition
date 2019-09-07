@@ -120,7 +120,7 @@ export class Menu {
             by = c.viewport.y/2 - bh/2;
 
             c.toggleTexturing(false);
-            c.setColor(0, 0, 0, bg);
+            c.setColor(...bg);
             c.fillShape(Shape.Rect, bx, by, bw, bh);
             c.toggleTexturing(true);
         }

@@ -7,6 +7,7 @@ import { Action, State } from "./input.js";
 import { negMod, clamp } from "./util.js";
 import { ShapeRenderer } from "./shaperenderer.js";
 import { Menu, Button } from "./menu.js";
+import { MapData } from "./mapdata.js";
 
 //
 // Game scene
@@ -28,7 +29,7 @@ export class Game {
     //
     // Constructor
     // 
-    constructor(gl) {
+    constructor(ev) {
 
         this.id = 13;
 
@@ -70,6 +71,8 @@ export class Game {
             }),
             new Button("Quit", () => {}),
         );
+
+        ev.tr.activate(false, 2.0, 0, 0, 0);
     }
 
 
@@ -91,9 +94,24 @@ export class Game {
     //
     // Set restart transitoin
     //
-    restartTransition(stuck) {
+    restartTransition(stuck, ev) {
 
         const STUCK_DELAY = 30;
+
+        if (stuck == 2) {
+
+            ++ this.id;
+            if (this.id > MapData.length) {
+
+                ev.tr.activate(true, 0.5, 1, 1, 1,
+                    () => {
+
+                        ev.core.changeScene("ending");
+                    });
+
+                return;
+            }
+        }
         
         this.localTr.activate(
             true, stuck ? (3.0-stuck) : 2, 
@@ -115,6 +133,8 @@ export class Game {
         const COG_SPEED = Math.PI/2.0 / MOVE_TIME;
         const FLOAT_SPEED = 0.05;
         const STUCK_WAVE_SPEED = 0.025;
+
+        if (ev.tr.active) return;
 
         // Update floating text
         this.textFloatValue += FLOAT_SPEED * ev.step;
@@ -179,7 +199,7 @@ export class Game {
         // Go to the next stage, if stage finished
         if (this.objMan.stageFinished()) {
 
-            this.restartTransition(2);
+            this.restartTransition(2, ev);
             return;
         }
 
@@ -187,6 +207,13 @@ export class Game {
         if (ev.input.getKey(Action.Reset) == State.Pressed) {
 
             this.restartTransition();
+        }
+
+
+        // TODO: TEMPORARY, REMOVE THIS!
+        if (ev.input.getKey(65) == State.Pressed) {
+
+            this.restartTransition(2, ev);
         }
         
     }
@@ -266,7 +293,7 @@ export class Game {
     //
     drawStageInfo(c) {
 
-        const TEXT = ["STAGE " + String(this.id), "Password: NONE"];
+        const TEXT = ["STAGE " + String(Math.min(13,this.id)), "Password: NONE"];
 
         const POS_Y = 4;
 
@@ -508,7 +535,8 @@ export class Game {
         // Draw pause menu
         if (this.paused) {
 
-            this.pauseMenu.draw(c, PAUSE_TEXT_SIZE, 0.5);
+            this.pauseMenu.draw(c, PAUSE_TEXT_SIZE, 
+                [0.33, 0.67, 1.00, 0.75]);
         }
     }
 }

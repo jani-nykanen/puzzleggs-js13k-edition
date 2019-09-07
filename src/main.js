@@ -1,5 +1,6 @@
 import { Core } from "./core.js";
 import { Game } from "./game.js";
+import { Ending } from "./ending.js";
 
 //
 // Main file
@@ -11,7 +12,8 @@ import { Game } from "./game.js";
 window.onload = () => {
 
     let c = new Core();
-    c.addScene(new Game(c.canvas.gl), "game", true);
+    c.addScene(new Game(c.ev), "game", true);
+    c.addScene(new Ending(c.ev), "ending", false);
 
     c.run(60);
 }

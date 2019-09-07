@@ -462,12 +462,16 @@ export class Canvas extends Transform {
     //
     toggleTexturing(state) {
 
+        let b = this.activeShader == this.shaderTex;
+
         this.activeShader = 
             state ? this.shaderTex : this.shaderNoTex;
 
         this.activeShader.use();
         this.setColor(1, 1, 1, 1);
         this.useTransform();
+
+        return b;
     }
 
 
