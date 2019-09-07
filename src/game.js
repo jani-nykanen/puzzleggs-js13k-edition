@@ -211,10 +211,10 @@ export class Game {
 
 
         // TODO: TEMPORARY, REMOVE THIS!
-        if (ev.input.getKey(65) == State.Pressed) {
-
-            this.restartTransition(2, ev);
-        }
+        //if (ev.input.getKey(65) == State.Pressed) {
+        //
+        //    this.restartTransition(2, ev);
+        //}
         
     }
 
