@@ -165,7 +165,8 @@ export class Canvas extends Transform {
             sgen.rightAngledTriangle(), // Right-angled triangle
             sgen.equilTriangle(), // Equilateral triangle
             sgen.regPoly(CIRCLE_PREC), // Ellipse
-            sgen.regPoly(CIRCLE_PREC, null, COG_TOOTH_WAIT, COG_TOOTH, 0.33), // Cog
+            sgen.regPoly(CIRCLE_PREC, 
+                null, COG_TOOTH_WAIT, COG_TOOTH, 0.33), // Cog
             sgen.filledCurve(t => 
                 [Math.cos( 1.25 * (t-Math.PI)/4) * Math.sin(t-Math.PI), 
                 Math.cos(t-Math.PI)], 

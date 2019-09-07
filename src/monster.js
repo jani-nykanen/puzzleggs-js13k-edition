@@ -30,7 +30,7 @@ export class Monster extends Movable {
     // 
     // Find target
     //
-    findTarget(stage) {
+    findTarget(stage, pl) {
 
         const DIR_X = [0, 1, 0, -1];
         const DIR_Y = [-1, 0, 1, 0];
@@ -39,11 +39,21 @@ export class Monster extends Movable {
         let tx = this.pos.x;
         let ty = this.pos.y;
 
-        tx += DIR_X[this.dir];
-        ty += DIR_Y[this.dir];
+        if (this.dir < 4) {
+
+            tx += DIR_X[this.dir];
+            ty += DIR_Y[this.dir];
+        }
+        else {
+
+            tx -= pl.target.x-pl.pos.x;
+            ty -= pl.target.y-pl.pos.y;
+        }
 
         let d;
         if (stage.isSolid(tx, ty, null, true)) {
+
+            if (this.dir == 4) return;
 
             d = NEXT_DIR[this.dir];
             tx = this.pos.x + DIR_X[d];
@@ -83,7 +93,7 @@ export class Monster extends Movable {
             stage.updateSolid(this.pos.x, this.pos.y, 2);
 
             if (pl.moving)
-                this.findTarget(stage);
+                this.findTarget(stage, pl);
         }
 
     }
@@ -111,7 +121,6 @@ export class Monster extends Movable {
         let swimAngle = Math.sin(t * Math.PI) * Math.PI / 6;
         if (this.pos.x % 2 == this.pos.y % 2)
             swimAngle *= -1;
-
 
         c.push();
         c.translate(this.rpos.x + Tile.Width/2 + dx, 
@@ -181,14 +190,60 @@ export class Monster extends Movable {
 
 
     //
+    // Draw special body
+    //
+    drawBodySpecial(c) {
+
+        const OUTLINE = 2;
+        const RADIUS = 24;
+
+        let t = this.moving ? this.moveTimer / MOVE_TIME : 0;
+
+        c.push();
+        c.translate(this.rpos.x + Tile.Width/2, 
+            this.rpos.y + Tile.Height/2);
+        c.rotate(t * Math.PI/2 * (
+            (this.pos.x-this.target.x) + (this.pos.y-this.target.y))   
+            );
+        c.useTransform();
+
+        for (let y = -OUTLINE; y <= OUTLINE; ++ y) {
+            for (let x = -OUTLINE; x <= OUTLINE; ++ x) {
+
+                if (Math.abs(x) < OUTLINE && 
+                    Math.abs(y) < OUTLINE) 
+                    continue;
+
+                c.setColor(0.0, 0.0, 0.0);
+                c.fillShape(Shape.Cog, 
+                    x, y, 
+                    RADIUS, RADIUS);
+            }
+        }
+
+        c.setColor(0.75, 0.75, 0.75);
+        c.fillShape(Shape.Cog, 0, 0, RADIUS, RADIUS);
+
+        c.pop();
+    }   
+
+
+    //
     // Draw
     //
     draw(c) {
 
         const HEIGHT = -2;
 
-        this.drawBody(c, 0, 0, [0,0,0, 0.25]);
-        this.drawBody(c, HEIGHT, HEIGHT);
+        if (this.dir < 4) {
+
+            this.drawBody(c, 0, 0, [0,0,0, 0.25]);
+            this.drawBody(c, HEIGHT, HEIGHT);
+        }
+        else {
+
+            this.drawBodySpecial(c);
+        }
         
     }
 }

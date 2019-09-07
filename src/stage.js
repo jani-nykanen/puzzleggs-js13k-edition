@@ -191,9 +191,10 @@ export class Stage {
                 case 13:
                 case 14:
                 case 15:
+                case 20:
 
                     this.updateSolid(x, y, 2);
-                    o.createMonster(x, y, t-12);
+                    o.createMonster(x, y, Math.min(t-12,4));
                     break;
             
                 default:
