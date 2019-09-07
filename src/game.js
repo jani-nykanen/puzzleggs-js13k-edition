@@ -6,6 +6,7 @@ import { Transition } from "./transition.js";
 import { Action, State } from "./input.js";
 import { negMod, clamp } from "./util.js";
 import { ShapeRenderer } from "./shaperenderer.js";
+import { Menu, Button } from "./menu.js";
 
 //
 // Game scene
@@ -55,6 +56,20 @@ export class Game {
         this.oldKeyCount = 0;
         this.keyAppearTimer = 0;
         this.appearDir = 0;
+
+        // Pause menu
+        this.pauseMenu = new Menu();
+        this.paused = false;
+
+        // Add menu buttons
+        this.pauseMenu.addButton(
+            new Button("Resume", () => {this.paused = false;}),
+            new Button("Restart", () => {
+                this.paused = false;
+                this.restartTransition();
+            }),
+            new Button("Quit", () => {}),
+        );
     }
 
 
@@ -104,6 +119,13 @@ export class Game {
         // Update floating text
         this.textFloatValue += FLOAT_SPEED * ev.step;
         
+        // Update pause menu (and nothing else!)
+        if (this.paused) {
+
+            this.pauseMenu.update(ev);
+            return;
+        }
+
         if (this.objMan.isActive() ||
             this.localTr.active) {
 
@@ -129,6 +151,14 @@ export class Game {
             }
 
             this.localTr.update(ev);
+            return;
+        }
+
+        // Check if enter pressed for pausing the game
+        if (ev.input.getKey(Action.Start) == State.Pressed) {
+
+            this.paused = true;
+            this.pauseMenu.cursorPos = 0;
             return;
         }
 
@@ -417,6 +447,7 @@ export class Game {
         const SCALE_TARGET = 0.25;
         const VICTORY_SCALE = 8;
         const VICTORY_ANGLE = Math.PI / 3;
+        const PAUSE_TEXT_SIZE = 48;
 
         c.clear(...BG_COLOR);
 
@@ -473,5 +504,11 @@ export class Game {
     
         // Draw keys
         this.drawKeys(c);
+
+        // Draw pause menu
+        if (this.paused) {
+
+            this.pauseMenu.draw(c, PAUSE_TEXT_SIZE, 0.5);
+        }
     }
 }

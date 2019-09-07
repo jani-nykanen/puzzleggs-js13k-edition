@@ -239,7 +239,9 @@ export class Canvas extends Transform {
 
                 for (let n = -OUTLINE; n <= OUTLINE; ++ n) {
 
-                    if (m == n && m == 0) continue;
+                    if (Math.abs(m) < OUTLINE && Math.abs(n) < OUTLINE) 
+                        continue;
+
                     for (let j = -2; j <= 2; ++ j) {
 
                         c.fillText(String.fromCharCode(i), 
