@@ -100,7 +100,6 @@ export class Menu {
         const TEXT_XOFF = -20;
         const SCALE_PLUS = 0.1;
         const SHADOW_OFF = BUTTON_OFF/2;
-        const SHADOW_ALPHA = 0.25;
         const BG_OFF = BUTTON_OFF*2;
         const COLORS = [[1, 1, 1], [1, 1, 0]];
 

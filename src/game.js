@@ -21,6 +21,7 @@ export const BG_COLOR = [0.33, 0.67, 1.00];
 
 // Local constants
 const KEY_APPEAR_TIME = 30;
+const INITIAL_MESSAGE_TIME = 120;
 
 
 //
@@ -34,7 +35,7 @@ export class Game {
     // 
     constructor(ev) {
 
-        this.id = 13;
+        this.id = 1;
 
         // Password stuff
         this.pgen = new PasswordGen();
@@ -81,12 +82,15 @@ export class Game {
             new Button("Quit", () => {
 
                 ev.tr.activate(true, 2.0, ...BG_COLOR,
-                    () => {ev.changeScene("title");}
+                    () => {ev.changeScene("title", 1);}
                 );
             }),
         );
 
         ev.tr.activate(false, 2.0, 0, 0, 0);
+
+        // Initial message timer
+        this.msgTimer = INITIAL_MESSAGE_TIME;
     }
 
 
@@ -151,7 +155,14 @@ export class Game {
         const FLOAT_SPEED = 0.05;
         const STUCK_WAVE_SPEED = 0.025;
 
+        // Update message timer
+        if (this.msgTimer >= 0) {
+
+            this.msgTimer -= ev.step;
+        }
+
         if (ev.tr.active) return;
+        
 
         // Update floating text
         this.textFloatValue += FLOAT_SPEED * ev.step;
@@ -177,6 +188,11 @@ export class Game {
             this.cogAngle = 0;
         }
 
+        if (this.msgTimer >= 60.0) {
+
+            return;
+        }
+
         // Update local transition, if active
         if (this.localTr.active) {
 
@@ -190,6 +206,7 @@ export class Game {
             this.localTr.update(ev);
             return;
         }
+        this.msgTimer = -1; // Just in case
 
         // Check if enter pressed for pausing the game
         if (ev.input.getKey(Action.Start) == State.Pressed) {
@@ -481,6 +498,8 @@ export class Game {
         const VICTORY_SCALE = 8;
         const VICTORY_ANGLE = Math.PI / 3;
         const PAUSE_TEXT_SIZE = 48;
+        const STORY_FONT_SCALE = 32;
+        const STORY_SCALE = 3;
 
         c.clear(...BG_COLOR);
 
@@ -544,6 +563,26 @@ export class Game {
             this.pauseMenu.draw(c, PAUSE_TEXT_SIZE, 
                 [0.33, 0.67, 1.00, 0.75]);
         }
+
+        // Draw "story" message
+        if (this.msgTimer > 0.0) {
+
+            // Compute scale
+            s = this.msgTimer / INITIAL_MESSAGE_TIME;
+            s = 1.0 + STORY_SCALE*s;
+
+            c.setGlobalAlpha(clamp(this.msgTimer/60.0, 0, 1));
+
+            c.drawScaledText("Save the unborn!", 
+                c.viewport.x/2, 
+                c.viewport.y/2 - STORY_FONT_SCALE*s/2,
+                -24, 0, STORY_FONT_SCALE * s, 
+                STORY_FONT_SCALE * s, true,
+                null, null, null, 
+                8*s, 0.25, [1, 0.75, 0.33]);
+
+            c.setGlobalAlpha(1);
+        }
     }
 
 
@@ -552,7 +591,17 @@ export class Game {
     //
     onChange(id) {
 
+        if (id == 0) {
+            
+            this.msgTimer = INITIAL_MESSAGE_TIME;
+            id = 1;
+        }
+        else
+            this.msgTimer = 0;
+
         this.restart(id);
+
+        // Set initial values
         this.paused = false;
         this.stuck = 0;
 

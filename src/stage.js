@@ -63,6 +63,7 @@ export class Stage {
     constructor(id, o) {
 
         let src = MapData[id -1];
+        this.id = id;
 
         // Decode RLE-packed data
         this.data = new Array(src.w * src.h);
@@ -233,7 +234,7 @@ export class Stage {
         c.translate(mx, my);
         if (angle != null) {
 
-            c.rotate(angle);
+            c.rotate(angle * (this.id % 2 == 0 ? -1 : 1));
         }
         c.scale(s, s);
         c.translate(-mx, -my); 
@@ -736,6 +737,7 @@ export class Stage {
 
                     // 
                     // TODO: Nested switch? Own function for these?
+                    // NOPE! HAHAHAHAHH I'm fucking lazy
                     //
                     // Draw starting/ending tile
                     if (t == 2) {

@@ -3,6 +3,7 @@ import { BG_COLOR } from "./game.js";
 import { State, Action } from "./input.js";
 import { PasswordGen } from "./passwordgen.js";
 import { Shape } from "./canvas.js";
+import { Bitmap } from "./bitmap.js";
 
 //
 // Title screen scene
@@ -15,22 +16,41 @@ export class TitleScreen {
     //
     // Constructor
     //
-    constructor(ev) {
+    constructor(ev, c) {
 
         // Menu
-        this.menu = new Menu();
-        this.menu.addButton(
+        this.menuShort = new Menu();
+        this.menuLong = new Menu();
+        // Active menu
+        this.menu = this.menuShort;
+
+        // Add buttons
+        let buttons = [ 
             new Button("New Game", () => {
-                ev.tr.activate(true, 2.0, ...BG_COLOR,
-                    () => {ev.changeScene("game", 1);}
+                this.errorTimer = 0;
+                ev.tr.activate(true, 0.5, ...BG_COLOR,
+                () => {
+                    ev.tr.speed = 2.0;
+                    ev.changeScene("game", 0);
+                }
+            );
+            }),
+            new Button("Continue", () => {
+                this.errorTimer = 0;
+                ev.tr.activate(true, 1.0, ...BG_COLOR,
+                    () => {
+                        ev.tr.speed = 2.0;
+                        ev.changeScene("game");
+                    }
                 );
                 }),
             new Button("Password", 
-                () => {
-                    this.pword = "";
-                    this.phase = 2;
-                }),
-        );
+            () => {
+                this.pword = "";
+                this.phase = 2;
+            }),];
+        this.menuShort.addButton(buttons[0], buttons[2]);
+        this.menuLong.addButton(buttons[0], buttons[1], buttons[2]);
 
         // Phase
         this.phase = 0;
@@ -43,10 +63,66 @@ export class TitleScreen {
 
         // Error timer
         this.errorTimer = 0;
+        // Wait timer (could use just one timer, true)
+        this.waitTimer = 0;
 
         // Vortex
         this.vortexTimer = 0;
         this.vphase = 0;
+
+        // Scaling
+        this.scale = 1.0;
+        // Alpha for logo, menu etc
+        this.alpha = 1.0;
+    
+        // Create logo
+        this.bmpLogo = this.createLogo(c);
+    }
+
+
+    //
+    // Create logo
+    //
+    createLogo(cn) {
+
+        const W = 1024;
+        const H = 256;
+
+        // Create a canvas
+        let canvas = document.createElement("canvas");
+        canvas.width = W;
+        canvas.height = H;
+        let c = canvas.getContext("2d");
+        c.font = "bold 172px sans-serif";
+        
+        c.textAlign = "center";
+
+        let x = W/2;
+        let y = H/2;
+
+        for (let j = 1; j < 5; ++ j) {
+
+            c.fillStyle = "rgb(170, 85, 0)";
+            c.fillText("PUZZLEggs", x+j*2, y+j*2);
+            c.fillRect(x - 480 + j*2, y + 16+j*2, 640, 16);
+        }
+        c.fillStyle = "rgb(255, 255, 85)";
+        c.fillText("PUZZLEggs", x, y);
+
+        c.fillRect(x - 480, y + 16, 640, 16);
+
+        // Create texture from the canvas content
+        let gl = cn.gl;
+        let t = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, t);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+        // Remove canvases
+        canvas.remove();
+
+        // Create a font bitmap
+        return new Bitmap(t, W, H);
     }
 
 
@@ -57,11 +133,22 @@ export class TitleScreen {
 
         const ERR_TIME = 120;
         const WAVE_SPEED = 0.05;
-        const VORTEX_SPEED = 0.025;
+        const VORTEX_SPEED = 0.0125;
 
         let id;
+        this.alpha = 1;
+        this.scale = 1;
 
-        if (ev.tr.active) return;
+        // Do not check input if transition active
+        if (ev.tr.active)  {
+
+            if (ev.tr.fadeIn) {
+
+                this.alpha = 1.0 - ev.tr.getScaledTime();
+                this.scale = 1.0 + 9*ev.tr.getScaledTime();
+            }
+            return;
+        }
 
         // Update vortex
         this.vortexTimer = 
@@ -125,8 +212,11 @@ export class TitleScreen {
                     }
                     else {
 
-                        ev.tr.activate(true, 2.0, ...BG_COLOR,
-                            () => {ev.changeScene("game", id);}
+                        ev.tr.activate(true, 1.0, ...BG_COLOR,
+                            () => {
+                                ev.tr.speed = 2.0;
+                                ev.changeScene("game", id);
+                            }
                         );
                     }
                 }
@@ -167,7 +257,9 @@ export class TitleScreen {
             t *= t;
 
             c.push();
-            c.rotate(Math.PI*2 * t * (this.vortexPhase == 0 ? 1 : -1))  ;
+            c.rotate(Math.PI*2 * t * 
+                (this.vphase == 0 ? 1 : -1) * (1 - 2* (i % 2)) )  ;
+            c.scale(this.scale, this.scale);
             c.useTransform();
 
             c.setColor(
@@ -201,6 +293,10 @@ export class TitleScreen {
         const COPYRIGHT_OFF = -8;
         const SHADOW_OFF_1 = 8;
         const SHADOW_OFF_2 = 4;
+        const LOGO_OUTLINE = 4;
+        const LOGO_W = 600;
+        const LOGO_H = 360;
+        const LOGO_Y = -224;
 
         c.clear(...BG_COLOR);
 
@@ -218,6 +314,8 @@ export class TitleScreen {
         this.drawVortex(c);
         c.toggleTexturing(true);
 
+        c.setGlobalAlpha(this.alpha);
+
         // Shift
         c.translate(0, CENTER_SHIFT);
         c.useTransform();
@@ -226,7 +324,7 @@ export class TitleScreen {
 
             c.drawScaledText("Press Enter", mx, my-ENTER_SCALE/2,
                 -20, 0, ENTER_SCALE, ENTER_SCALE, true,
-                Math.PI*2/11, 4, this.enterWave,
+                Math.PI*2/6, 8, this.enterWave,
                 SHADOW_OFF_1, 0.25, [1, 1, 0.5]);
         }
         else if (this.phase == 1) {
@@ -272,17 +370,43 @@ export class TitleScreen {
             -20, 0, COPYRIGHT_SCALE, COPYRIGHT_SCALE, true,
             null, null, null,
             SHADOW_OFF_2, 0.25, [1, 1, 1]);
+
+        // Draw logo
+        for (let y = -LOGO_OUTLINE; y <= LOGO_OUTLINE; ++ y) {
+
+            for (let x = -LOGO_OUTLINE; x <= LOGO_OUTLINE; ++ x) {
+
+                if (Math.abs(x) < LOGO_OUTLINE && Math.abs(y) < LOGO_OUTLINE)
+                    continue;
+
+                c.setColor(0, 0, 0);
+                c.drawScaledBitmap(this.bmpLogo, 
+                    mx-LOGO_W/2 + x, my + LOGO_Y + y, 
+                    LOGO_W, LOGO_H);
+            }
+        }
+
+        c.setColor(1, 1, 1);
+        c.drawScaledBitmap(this.bmpLogo, 
+            mx-LOGO_W/2, my + LOGO_Y, LOGO_W, LOGO_H);
+
+        c.setGlobalAlpha(1);
     }
 
 
     //
     // Change event
     //
-    onChange() {
+    onChange(p) {
 
         this.phase = 1;
-        this.menu.cursorPos = 0;
         this.errorTimer = 0;
+        this.scale = 1;
+
+        if (p != null)
+            this.menu = this.menuLong;
+
+        this.menu.cursorPos = (p == null ? 0 : 1);
     }
 
 }

@@ -224,7 +224,7 @@ export class Canvas extends Transform {
 
         // Draw characters to the canvas
         let c = canvas.getContext("2d");
-        c.font = "56px sans-serif";
+        c.font = "bold 56px sans-serif";
         
         c.textAlign = "center";
         let x, y;
@@ -247,7 +247,7 @@ export class Canvas extends Transform {
                     if (Math.abs(m) < OUTLINE && Math.abs(n) < OUTLINE) 
                         continue;
 
-                    for (let j = -2; j <= 2; ++ j) {
+                    for (let j = -1; j <= 1; ++ j) {
 
                         c.fillText(
                             str, 
@@ -258,7 +258,7 @@ export class Canvas extends Transform {
 
             // Base color
             c.fillStyle = "#FFFFFF";
-            for (let j = -2; j <= 2; ++ j) {
+            for (let j = -1; j <= 1; ++ j) {
 
                 c.fillText(str, 
                     x * 64 + 32 + j, y * 64 + 48);

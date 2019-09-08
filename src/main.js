@@ -15,7 +15,7 @@ window.onload = () => {
     let c = new Core();
     c.addScene(new Game(c.ev), "game", false);
     c.addScene(new Ending(c.ev), "ending", false);
-    c.addScene(new TitleScreen(c.ev), "title", true);
+    c.addScene(new TitleScreen(c.ev, c.canvas), "title", true);
 
     c.run(60);
 }
