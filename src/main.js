@@ -13,9 +13,9 @@ import { TitleScreen } from "./title.js";
 window.onload = () => {
 
     let c = new Core();
-    c.addScene(new Game(c.ev), "game", true);
+    c.addScene(new Game(c.ev), "game", false);
     c.addScene(new Ending(c.ev), "ending", false);
-    c.addScene(new TitleScreen(c.ev), "title", false);
+    c.addScene(new TitleScreen(c.ev), "title", true);
 
     c.run(60);
 }

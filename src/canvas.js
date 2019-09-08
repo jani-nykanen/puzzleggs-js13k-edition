@@ -226,6 +226,7 @@ export class Canvas extends Transform {
         
         c.textAlign = "center";
         let x, y;
+        let str;
         
         for (let i = START; i < END; ++ i) {
 
@@ -234,6 +235,8 @@ export class Canvas extends Transform {
 
             // Black background
             c.fillStyle = "#000000";
+
+            str = i == 35 ? "ä" : String.fromCharCode(i);
 
             for (let m = -OUTLINE; m <= OUTLINE; ++ m) {
 
@@ -244,7 +247,8 @@ export class Canvas extends Transform {
 
                     for (let j = -2; j <= 2; ++ j) {
 
-                        c.fillText(String.fromCharCode(i), 
+                        c.fillText(
+                            str, 
                             x * 64 + 32 + j + m, y * 64 + 48 + n);
                     }
                 }
@@ -254,7 +258,7 @@ export class Canvas extends Transform {
             c.fillStyle = "#FFFFFF";
             for (let j = -2; j <= 2; ++ j) {
 
-                c.fillText(String.fromCharCode(i), 
+                c.fillText(str, 
                     x * 64 + 32 + j, y * 64 + 48);
             }
         }

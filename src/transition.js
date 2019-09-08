@@ -89,6 +89,9 @@ export class Transition {
         if (!this.active || this.delayTimer > 0) 
             return;
 
+        c.loadIdentity();
+        c.useTransform();
+
         let s = c.toggleTexturing(false);
         let t = this.getScaledTime();
         c.setColor(this.color.r, 
