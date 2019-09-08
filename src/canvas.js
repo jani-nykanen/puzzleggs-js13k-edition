@@ -79,6 +79,7 @@ export const Shape = {
     Egg: 5,
     Star: 6,
     HalfCircle: 7,
+    Hexagon: 8,
 };
 
 
@@ -174,6 +175,7 @@ export class Canvas extends Transform {
                 EGG_PREC), // Egg
             sgen.star(5, STAR_JUMP), // Star
             sgen.regPoly(CIRCLE_PREC, CIRCLE_PREC/2), // Half a circle
+            sgen.regPoly(6), // Hexagon 
         ];
     }
 
@@ -236,7 +238,7 @@ export class Canvas extends Transform {
             // Black background
             c.fillStyle = "#000000";
 
-            str = i == 35 ? "ä" : String.fromCharCode(i);
+            str = i == 35 ? String.fromCharCode(228) : String.fromCharCode(i);
 
             for (let m = -OUTLINE; m <= OUTLINE; ++ m) {
 
@@ -372,7 +374,9 @@ export class Canvas extends Transform {
     //
     // Draw scaled text
     //
-    drawScaledText(str, dx, dy, xoff, yoff, sx, sy, center, period, amplitude, start) {
+    drawScaledText(str, dx, dy, xoff, yoff, sx, sy, 
+        center, period, amplitude, start,
+        shadowOff, alpha, col) {
 
         let cw = this.bmpFont.w / 16;
         let ch = cw;
@@ -392,29 +396,49 @@ export class Canvas extends Transform {
         }
 
         let jump = 0;   
-        // Draw every character
-        for (let i = 0; i < str.length; ++ i) {
+        
+        let loop = shadowOff ? 1 : 0;
+        if (shadowOff == null)
+            shadowOff = 0;
 
-            c = str.charCodeAt(i);
-            if (c == '\n'.charCodeAt(0)) {
+        for (let j = loop; j >= 0; -- j) {
 
-                x = dx;
-                y += (ch + yoff) * usy;
-                continue;
+            x = dx;
+            y = dy;
+
+            if (j == 0 && col) 
+                this.setColor(...col);
+            else if (j == 1)
+                this.setColor(0, 0, 0, alpha);
+
+            // Draw every character
+            for (let i = 0; i < str.length; ++ i) {
+
+                c = str.charCodeAt(i);
+                if (c == '\n'.charCodeAt(0)) {
+
+                    x = dx;
+                    y += (ch + yoff) * usy;
+                    continue;
+                }
+
+                // Make it float
+                if (period != null) {
+
+                    jump = Math.sin(start + i * period) * amplitude;
+                }
+                // Draw current character
+                this.drawScaledBitmapRegion(
+                    this.bmpFont, 
+                    (c % 16) * cw, ((c/16)|0) * ch,
+                    cw, ch, 
+                    x + shadowOff*j, 
+                    y + shadowOff*j + jump, 
+                    sx, sy
+                );
+
+                x += (cw + xoff) * usx;
             }
-
-            // Make it float
-            if (period != null) {
-
-                jump = Math.sin(start + i * period) * amplitude;
-            }
-            // Draw current character
-            this.drawScaledBitmapRegion(
-                this.bmpFont, (c % 16) * cw, ((c/16)|0) * ch,
-                cw, ch, x, y + jump, sx, sy
-            );
-
-            x += (cw + xoff) * usx;
         }
     }
     

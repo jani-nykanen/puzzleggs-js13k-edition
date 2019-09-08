@@ -321,8 +321,9 @@ export class Game {
         const PERIOD = [Math.PI/3, Math.PI/6];
 
         const SHADOW_ALPHA = 0.25;
-        const SHADOW_X = [6, 4];
-        const SHADOW_Y = [6, 4];
+        const SHADOW_OFF = [6, 4];
+
+        const COLOR = [1, 1, 0.5];
 
         c.toggleTexturing(true);
 
@@ -336,28 +337,21 @@ export class Game {
                     this.localTr.getScaledDelayTime()) * 
                 (AMPLITUDE[j] + FONT_SIZE[j])) : 0;
 
-            for (let i = 1; i >= 0; -- i) {
+            if (j == 0)
+                y = POS_Y + Tile.Height/2;
+            else
+                y = c.viewport.y - POS_Y - Tile.Height/2;
 
-                if (j == 0)
-                    y = POS_Y + Tile.Height/2;
-                else
-                    y = c.viewport.y - POS_Y - Tile.Height/2;
-                y -= FONT_SIZE[j]/2 - i *SHADOW_Y[j];
-                y -= (1 - 2*j) * top;
+            y -= FONT_SIZE[j]/2;
+            y -= (1 - 2*j) * top;
 
-                if (i == 1)
-                    c.setColor(0, 0, 0, SHADOW_ALPHA);
-                else
-                    c.setColor(1, 1, 0.5);
-
-                c.drawScaledText(TEXT[j], 
-                    c.viewport.x/2 + i*SHADOW_X[j], y,
-                    -16, 0, 
-                    FONT_SIZE[j], FONT_SIZE[j], true, 
-                    PERIOD[j], AMPLITUDE[j],
-                    this.textFloatValue);
-
-            }
+            c.drawScaledText(TEXT[j], 
+                c.viewport.x/2, y,
+                -16, 0, 
+                FONT_SIZE[j], FONT_SIZE[j], true, 
+                PERIOD[j], AMPLITUDE[j],
+                this.textFloatValue,
+                SHADOW_OFF[j], SHADOW_ALPHA, COLOR);
         }
     }
 
@@ -367,8 +361,8 @@ export class Game {
     //
     drawStuck(c) {
 
-        const FONT_SCALE = 96;
-        const OFFSET = 72;
+        const FONT_SCALE = [88, 72] [this.stuck -1];
+        const OFFSET = [72, 56] [this.stuck -1];
         const STR = ["STUCK", "STAGE CLEAR"] [this.stuck -1];
         const MOVE = 64;
         const WAVE_AMPLITUDE = -16;
@@ -403,20 +397,13 @@ export class Game {
 
             c.setGlobalAlpha(p);
 
-            // Draw base text & shadow
-            for (let j = 1; j >= 0 ; -- j) {
-
-                if (j == 0)
-                    c.setColor(...COLOR);
-                else
-                    c.setColor(0, 0, 0, SHADOW_ALPHA);
-
-                c.drawScaledText(STR.charAt(i), 
-                    left + i * OFFSET + SHADOW_OFF * j, 
-                    my - FONT_SCALE/2 + y + SHADOW_OFF * j,
-                    0, 0, 
-                    FONT_SCALE, FONT_SCALE, true);
-            }
+            c.drawScaledText(STR.charAt(i), 
+                left + i * OFFSET, 
+                my - FONT_SCALE/2 + y,
+                0, 0, 
+                FONT_SCALE, FONT_SCALE, true,
+                null, null, null,
+                SHADOW_OFF, SHADOW_ALPHA, COLOR);
         }
 
         c.toggleTexturing(false);

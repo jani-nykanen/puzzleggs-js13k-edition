@@ -102,6 +102,7 @@ export class Menu {
         const SHADOW_OFF = BUTTON_OFF/2;
         const SHADOW_ALPHA = 0.25;
         const BG_OFF = BUTTON_OFF*2;
+        const COLORS = [[1, 1, 1], [1, 1, 0]];
 
         let n = this.buttons.length;
         let h = scale + BUTTON_OFF;
@@ -128,31 +129,25 @@ export class Menu {
 
         // Draw buttons
         let s;
+        let col;
         for (let i = 0; i < n; ++ i) {
 
-            for (let j = 1; j >= 0; -- j) {
+            if (i == this.cursorPos) {
 
-                if (i == this.cursorPos) {
-
-                    s = scale * (1 + SCALE_PLUS);
-                    if (j == 0)
-                        c.setColor(1, 1, 0.0);
-                }
-                else {
-
-                    s = scale;
-                    if (j == 0)
-                        c.setColor();
-                }
-                if (j == 1)
-                    c.setColor(0, 0, 0, SHADOW_ALPHA);
-
-                c.drawScaledText(this.buttons[i].text,
-                    x + j*SHADOW_OFF, y + i*h + j*SHADOW_OFF, 
-                    TEXT_XOFF, 0,
-                    s, s, true);
-
+                s = scale * (1 + SCALE_PLUS);
+                col = COLORS[1];
             }
+            else {
+
+                s = scale;
+                col = COLORS[0];
+            }
+
+            c.drawScaledText(this.buttons[i].text,
+                x, y + i*h , 
+                TEXT_XOFF, 0,
+                s, s, true, null, null, null,
+                SHADOW_OFF, 0.25, col);
         }
 
     }
