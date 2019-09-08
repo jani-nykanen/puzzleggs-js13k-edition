@@ -8,6 +8,7 @@ import { negMod, clamp } from "./util.js";
 import { ShapeRenderer } from "./shaperenderer.js";
 import { Menu, Button } from "./menu.js";
 import { MapData } from "./mapdata.js";
+import { PasswordGen } from "./passwordgen.js";
 
 //
 // Game scene
@@ -15,8 +16,10 @@ import { MapData } from "./mapdata.js";
 //
 
 
+// Background color
+export const BG_COLOR = [0.33, 0.67, 1.00];
+
 // Local constants
-const BG_COLOR = [0.33, 0.67, 1.00];
 const KEY_APPEAR_TIME = 30;
 
 
@@ -32,6 +35,10 @@ export class Game {
     constructor(ev) {
 
         this.id = 13;
+
+        // Password stuff
+        this.pgen = new PasswordGen();
+        this.pword = "";
 
         // "Restart"
         this.objMan = null;
@@ -71,7 +78,12 @@ export class Game {
                 this.paused = false;
                 this.restartTransition();
             }),
-            new Button("Quit", () => {}),
+            new Button("Quit", () => {
+
+                ev.tr.activate(true, 2.0, ...BG_COLOR,
+                    () => {ev.changeScene("title");}
+                );
+            }),
         );
 
         ev.tr.activate(false, 2.0, 0, 0, 0);
@@ -85,6 +97,9 @@ export class Game {
 
         if (id != null && id > 0)
             this.id = id;
+
+        // Generate password
+        this.pword = this.pgen.genPassword(this.id);
 
         // (Re)create an object manager
         this.objMan = new ObjectManager();
@@ -108,7 +123,7 @@ export class Game {
                 ev.tr.activate(true, 0.5, 1, 1, 1,
                     () => {
 
-                        ev.core.changeScene("ending");
+                        ev.changeScene("ending");
                     });
 
                 return;
@@ -118,7 +133,7 @@ export class Game {
         this.localTr.activate(
             true, stuck ? (3.0-stuck) : 2, 
             ...BG_COLOR, () => 
-                {this.restart(stuck == 2 ? (++this.id) : 0);
+                {this.restart();
                 },
             STUCK_DELAY * stuck
         );
@@ -211,13 +226,13 @@ export class Game {
             this.restartTransition();
         }
 
-
         // TODO: TEMPORARY, REMOVE THIS!
+        /*
         if (ev.input.getKey(65) == State.Pressed) {
-        //
+        
             this.restartTransition(2, ev);
         }
-        
+        */
     }
 
 
@@ -297,7 +312,7 @@ export class Game {
 
         const TEXT = 
             ["STAGE " + String(Math.min(MapData.length ,this.id)), 
-            "Password: NONE"];
+            "Password: " + this.pword];
 
         const POS_Y = 4;
 
@@ -542,5 +557,18 @@ export class Game {
             this.pauseMenu.draw(c, PAUSE_TEXT_SIZE, 
                 [0.33, 0.67, 1.00, 0.75]);
         }
+    }
+
+
+    //
+    // Called when this scene is made active
+    //
+    onChange(id) {
+
+        this.restart(id);
+        this.paused = false;
+        this.stuck = 0;
+
+        this.localTr.activate(false, 1.0, ...BG_COLOR);
     }
 }

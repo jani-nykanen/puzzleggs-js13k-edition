@@ -1,4 +1,5 @@
-{ "height":7,
+{ "compressionlevel":0,
+ "height":7,
  "infinite":false,
  "layers":[
         {
@@ -17,7 +18,7 @@
  "nextobjectid":1,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.2.3",
+ "tiledversion":"2019.07.31",
  "tileheight":16,
  "tilesets":[
         {

@@ -29,14 +29,10 @@ export class Core {
         // anyway
         this.ev = {
 
-            // About passing a reference to this:
-            // Not the proper way to do this, but I have 
-            // no intend to add fancy scene managers, they
-            // just require a lot of room (in other)
-            core: this,
+            // Change scene
+            changeScene: (n, p) => {this.changeScene(n, p);},
 
-            // ...and here are some managers I was not too lazy
-            // to implement!
+            // References to managers
             input: new Input(),
             tr: new Transition(),
 
@@ -128,10 +124,13 @@ export class Core {
 
 
     // Change a scene
-    changeScene(name) {
+    changeScene(name, param) {
 
         if (this.scenes[name] != null)
             this.activeScene = this.scenes[name];
+
+        if (this.activeScene.onChange != null)
+            this.activeScene.onChange(param);
     }
 
 
