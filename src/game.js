@@ -87,8 +87,6 @@ export class Game {
             }),
         );
 
-        ev.tr.activate(false, 2.0, 0, 0, 0);
-
         // Initial message timer
         this.msgTimer = INITIAL_MESSAGE_TIME;
     }
@@ -242,14 +240,6 @@ export class Game {
 
             this.restartTransition();
         }
-
-        // TODO: TEMPORARY, REMOVE THIS!
-        /*
-        if (ev.input.getKey(65) == State.Pressed) {
-        
-            this.restartTransition(2, ev);
-        }
-        */
     }
 
 

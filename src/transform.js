@@ -87,10 +87,6 @@ export class Transform {
     //
     fitViewToDimension(w, h, d) {
 
-        //
-        // TODO: Vertical aspect ratio?
-        //
-
         if (w/h >= 1.0) {
 
             this.setViewport( w/h * d, d);

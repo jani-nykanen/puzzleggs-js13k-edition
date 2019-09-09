@@ -115,8 +115,6 @@ export class ObjectManager {
     //
     sortObjects() {
 
-        // TODO: Make sure this does not leak memory!
-
         // Push objects to array
         this.depthList = new Array();
         this.depthList.push(this.player);

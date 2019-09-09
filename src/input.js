@@ -1,3 +1,5 @@
+import { toggleFullscreen } from "./util.js";
+
 //
 // Input manager
 // (c) 2019 Jani Nykänen
@@ -39,7 +41,7 @@ export class Input {
     //
     // Constructor
     //
-    constructor() {
+    constructor(canvas) {
 
         this.keys = {};
 
@@ -47,13 +49,30 @@ export class Input {
         window.addEventListener("keydown", 
             (e) => {
                 e.preventDefault();
-                this.keyPressed(e.keyCode)
+                this.keyPressed(e.keyCode);
+
+                // F for fullscreen, had to be done here
+                if (e.keyCode == 70) {
+
+                    toggleFullscreen(canvas);
+                }
             });
         window.addEventListener("keyup", 
             (e) => {
                 e.preventDefault();
                 this.keyReleased(e.keyCode);
             });   
+    
+        // To get focus only
+        window.addEventListener("mousemove", (e) => {
+
+            window.focus();
+        });
+        // Disable context menu
+        window.addEventListener("contextmenu", (e) => {
+
+            e.preventDefault();
+        });
     }
 
 

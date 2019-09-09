@@ -24,6 +24,13 @@ export class Core {
         this.frameRate = 30;
         this.target = 0;
 
+        // Create "Initializing" text
+        this.pInit = document.createTextNode("Initializing...");
+        document.body.style.color = "rgb(255, 255, 170)";
+        document.body.appendChild(this.pInit);
+        
+        // Create a canvas
+        this.canvas = new Canvas(128, 96);
 
         // Put event stuff here. Whatever that means,
         // anyway
@@ -33,13 +40,10 @@ export class Core {
             changeScene: (n, p) => {this.changeScene(n, p);},
 
             // References to managers
-            input: new Input(),
+            input: new Input(this.canvas.canvas),
             tr: new Transition(),
 
         };
-
-        // Create a canvas
-        this.canvas = new Canvas(128, 96);
 
         // Set events
         window.addEventListener("resize", () =>    
@@ -142,6 +146,9 @@ export class Core {
         this.frameRate = Math.max(30, frameRate);
         this.ev.step = 60.0 / this.frameRate;
         this.target = 1000.0 / this.frameRate;
+
+        this.pInit.remove();
+        this.canvas.show();
 
         this.loop(0);
     }

@@ -6,6 +6,8 @@ import { Shape } from "./canvas.js";
 import { Bitmap } from "./bitmap.js";
 import { Egg } from "./egg.js";
 import { Vector2 } from "./vector.js";
+import { Player } from "./player.js";
+import { Tile } from "./stage.js";
 
 //
 // Title screen scene
@@ -42,14 +44,6 @@ export class TitleScreen {
                 this.phase = 3;
                 this.waitTimer = WAIT_TIME;
                 this.errorTimer = 0;
-                /*
-                
-                ev.tr.activate(true, 0.5, ...BG_COLOR,
-                () => {
-                    ev.tr.speed = 2.0;
-                    ev.changeScene("game", 0);
-                }
-                );*/
             }),
             new Button("Continue", () => {
                 this.errorTimer = 0;
@@ -101,6 +95,15 @@ export class TitleScreen {
             this.eggs[i].follow = 1; // Affects the color
         }
         this.eggAngle = 0;
+
+        // ...and the bird!
+        this.bird = new Player(0, 0);
+        this.bird.scale = 1;
+        this.bird.angle = 0;
+
+        // "Press F" pos
+        this.pressFPos = 0;
+        this.renderWidth = 0;
     }
 
 
@@ -117,7 +120,7 @@ export class TitleScreen {
         canvas.width = W;
         canvas.height = H;
         let c = canvas.getContext("2d");
-        c.font = "bold 172px sans-serif";
+        c.font = "bold 172px Arial";
         
         c.textAlign = "center";
 
@@ -157,7 +160,7 @@ export class TitleScreen {
 
         const ANGLE_SPEED = 0.0125;
         const ROTATE_SPEED = 0.05;
-        const RADIUS = 480;
+        const RADIUS = 360;
         const START = 3;
 
         this.eggAngle = (this.eggAngle + ANGLE_SPEED*ev.step) % (Math.PI*2);
@@ -166,28 +169,30 @@ export class TitleScreen {
         if (this.phase == 3)
             m = this.waitTimer / WAIT_TIME;
 
-        let a;
-        let r;
-        for (let i = 0; i < this.eggs.length; ++ i) {
+        let a, r, o;
+        for (let i = 0; i < this.eggs.length +1; ++ i) {
 
             a = this.eggAngle + Math.PI*2/this.eggs.length * i;
             r = m * 1.0 / (this.eggs.length+START) * (i+START);
             r *= r;
             a *= 1 - 2 * (i % 2);
 
+            o = i < this.eggs.length ? this.eggs[i] : this.bird;
+
             // Set position
-            this.eggs[i].rpos = new Vector2(
+            
+            o.rpos = new Vector2(
 
                 Math.cos(a) * RADIUS * r,
                 Math.sin(a) * RADIUS * r
             );
 
             // Set scale
-            this.eggs[i].scale = 3.75 * r;
+            o.scale = 3.75 * r;
 
             // Update angle
-            this.eggs[i].angle = 
-                (this.eggs[i].angle + 
+            o.angle = 
+                (o.angle + 
                 ROTATE_SPEED*ev.step * 
                 (-1 + 2 * (i%2))) % (Math.PI*2)
         }
@@ -202,6 +207,7 @@ export class TitleScreen {
         const ERR_TIME = 120;
         const WAVE_SPEED = 0.05;
         const VORTEX_SPEED = 0.0125;
+        const PRESS_F_SPEED = 4.0;
 
         let id;
         let t;
@@ -222,6 +228,9 @@ export class TitleScreen {
             }
             return;
         }
+
+        // Update "Press F"
+        this.pressFPos += ev.step;
 
         // Update vortex
         this.vortexTimer = 
@@ -362,12 +371,20 @@ export class TitleScreen {
             c.pop();
         }
 
-        c.scale(this.scale, this.scale);
+
         // Draw eggs
         for (let e of this.eggs) {
 
             e.draw(c, true, e.angle, true, e.scale, true, true);
         }
+
+        // Draw bird
+        c.translate(this.bird.rpos.x, this.bird.rpos.y);
+        c.rotate(this.bird.angle);
+        c.scale(this.bird.scale, this.bird.scale);
+        c.useTransform();
+
+        this.bird.draw(c, true);
 
         c.pop();
     }
@@ -391,6 +408,7 @@ export class TitleScreen {
         const LOGO_W = 600;
         const LOGO_H = 360;
         const LOGO_Y = -224;
+        const PRESS_F_STR = "Press F to toggle fullscreen";
 
         c.clear(...BG_COLOR);
 
@@ -402,6 +420,10 @@ export class TitleScreen {
         c.loadIdentity();
         c.fitViewToDimension(c.w, c.h, VIEW_TARGET);
         c.useTransform();
+
+        // Store viewport
+        this.renderWidth = c.viewport.x;
+        this.pressFPos %= this.renderWidth;
 
         // Draw background vortex
         c.toggleTexturing(false);
@@ -429,7 +451,7 @@ export class TitleScreen {
 
                 c.setColor(1, 0.5, 0);
                 c.drawScaledText("Incorrect password!", 
-                    mx, my-TEXT_SCALE*2,
+                    mx, my-TEXT_SCALE*3,
                     -20, 0, PW_GUIDE_SCALE, PW_GUIDE_SCALE, true);
             }
         }
@@ -485,6 +507,16 @@ export class TitleScreen {
         c.drawScaledBitmap(this.bmpLogo, 
             mx-LOGO_W/2, my + LOGO_Y, LOGO_W, LOGO_H);
 
+        // Draw "Press F"
+        for (let i = -1; i <= 1; ++ i) {
+
+            c.drawScaledText(PRESS_F_STR, 
+                -this.pressFPos + 
+                    i *this.renderWidth,
+                0, -24, 0, COPYRIGHT_SCALE, COPYRIGHT_SCALE, false,
+                null, null, null, SHADOW_OFF_2, 0.25, [1, 1, 1]);
+        }
+
         c.setGlobalAlpha(1);
     }
 
@@ -494,12 +526,14 @@ export class TitleScreen {
     //
     onChange(p) {
 
-        this.phase = 1;
         this.errorTimer = 0;
         this.scale = 1;
 
-        if (p != null)
+        if (p != null) {
+
+            this.phase = 1;
             this.menu = this.menuLong;
+        }
 
         this.menu.cursorPos = (p == null ? 0 : 1);
     }

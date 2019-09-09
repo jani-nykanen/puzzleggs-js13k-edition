@@ -110,6 +110,7 @@ export class Canvas extends Transform {
         this.canvas.setAttribute(
             "style", 
             "position: absolute; top: 0; left: 0; z-index: -1");
+        this.canvas.hidden = true;
         cdiv.appendChild(this.canvas);
         document.body.appendChild(cdiv);
 
@@ -145,6 +146,15 @@ export class Canvas extends Transform {
 
         // Global alpha
         this.globalAlpha = 1.0;
+    }
+
+
+    //
+    // Show canvas
+    //
+    show() {
+        
+        this.canvas.hidden = false;
     }
 
 

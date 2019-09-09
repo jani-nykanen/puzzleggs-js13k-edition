@@ -127,7 +127,6 @@ export class Player extends Movable {
             this.target.x = tx;
             this.target.y = ty;
 
-            // TODO: Might cause problems? Check this.
             stage.updateSolid(this.pos.x, this.pos.y, 0);
 
             // Return true only if a lock is opened with a key
@@ -200,7 +199,7 @@ export class Player extends Movable {
     //
     // Draw
     //
-    draw(c) {
+    draw(c, spc) {
 
         const HEAD_W = 48;
         const HEAD_H = 40;
@@ -234,8 +233,8 @@ export class Player extends Movable {
 
         if (!this.exist) return;
 
-        let mx = this.rpos.x + Tile.Width/2;
-        let my = this.rpos.y + Tile.Height/2;
+        let mx = (spc ? 0 : this.rpos.x + Tile.Width/2);
+        let my = (spc ? 0 : this.rpos.y + Tile.Height/2);
 
         if (this.dying) {
 
@@ -243,12 +242,15 @@ export class Player extends Movable {
         }
         
 
-        // Draw shadow
-        c.setColor(0, 0, 0, SHADOW_ALPHA);
-        c.fillShape(Shape.Ellipse, 
-            mx, 
-            my + (HEAD_Y + LEG_OFF) + LEG_HEIGHT + SHADOW_OFF,
-            SHADOW_WIDTH/2, SHADOW_HEIGHT/2 );
+        if (!spc) {
+
+            // Draw shadow
+            c.setColor(0, 0, 0, SHADOW_ALPHA);
+            c.fillShape(Shape.Ellipse, 
+                mx, 
+                my + (HEAD_Y + LEG_OFF) + LEG_HEIGHT + SHADOW_OFF,
+                SHADOW_WIDTH/2, SHADOW_HEIGHT/2 );
+        }
 
         //
         // Draw legs
@@ -256,13 +258,15 @@ export class Player extends Movable {
         let legY = my + HEAD_Y + LEG_OFF;
         let legYMod = Math.sin(this.legTimer) * 4;
         for (let i = -1; i <= 1; i += 2) {
-
-            // Leg outline
-            c.setColor(0.0, 0.0, 0.0);
-            c.fillShape(Shape.EquilTriangle,
-                mx + LEG_OFF*i - LEG_OUTLINE/2 +1, legY + legYMod*i,
-                LEG_WIDTH + LEG_OUTLINE*2, 
-                -LEG_HEIGHT - LEG_OUTLINE);
+            
+            if (!spc) {
+                // Leg outline
+                c.setColor(0.0, 0.0, 0.0);
+                c.fillShape(Shape.EquilTriangle,
+                    mx + LEG_OFF*i - LEG_OUTLINE/2 +1, legY + legYMod*i,
+                    LEG_WIDTH + LEG_OUTLINE*2, 
+                    -LEG_HEIGHT - LEG_OUTLINE);
+            }
 
             // Leg base
             c.setColor(...LEG_COLOR);
@@ -281,11 +285,14 @@ export class Player extends Movable {
         c.rotate(Math.sin(this.headAngle) * HEAD_ANGLE);
         c.useTransform();   
 
-        // Head outline
-        c.setColor(0, 0, 0);
-        c.fillShape(Shape.Rect, 
-            -HEAD_W/2 - BOX_OUTLINE, -HEAD_H/2 - BOX_OUTLINE, 
-            HEAD_W + BOX_OUTLINE*2, HEAD_H + BOX_OUTLINE*2);
+        if (!spc) {
+
+            // Head outline
+            c.setColor(0, 0, 0);
+            c.fillShape(Shape.Rect, 
+                -HEAD_W/2 - BOX_OUTLINE, -HEAD_H/2 - BOX_OUTLINE, 
+                HEAD_W + BOX_OUTLINE*2, HEAD_H + BOX_OUTLINE*2);
+        }
 
         // Head base
         c.setColor(...BOX_COLOR);
