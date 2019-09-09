@@ -91,8 +91,14 @@ export class Transform {
         // TODO: Vertical aspect ratio?
         //
 
-        let viewW = w/h * d;
-        this.setViewport(viewW, d);
+        if (w/h >= 1.0) {
+
+            this.setViewport( w/h * d, d);
+        }
+        else {
+
+            this.setViewport( d, h/w * d);
+        }
     }
 
 

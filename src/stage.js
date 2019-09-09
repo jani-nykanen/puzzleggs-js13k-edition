@@ -220,8 +220,13 @@ export class Stage {
         let my = this.h*Tile.Height/2;
 
         // Center
-        let tx = c.viewport.x / 2 - mx;
+        let tx = 0;
         let ty = 0;
+
+        if (c.w/c.h >= 1)
+            tx = c.viewport.x / 2 - mx;
+        else 
+            ty = c.viewport.y / 2 - my;
 
         if (dx != null) mx = dx;
         if (dy != null) my = dy;
