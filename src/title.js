@@ -4,6 +4,8 @@ import { State, Action } from "./input.js";
 import { PasswordGen } from "./passwordgen.js";
 import { Shape } from "./canvas.js";
 import { Bitmap } from "./bitmap.js";
+import { Egg } from "./egg.js";
+import { Vector2 } from "./vector.js";
 
 //
 // Title screen scene
@@ -11,12 +13,21 @@ import { Bitmap } from "./bitmap.js";
 //
 
 
+// Local constants
+const WAIT_TIME = 60;
+
+
+//
+// Title screen scene class
+//
 export class TitleScreen {
 
     //
     // Constructor
     //
     constructor(ev, c) {
+
+        const EGG_COUNT = 8;
 
         // Menu
         this.menuShort = new Menu();
@@ -27,19 +38,23 @@ export class TitleScreen {
         // Add buttons
         let buttons = [ 
             new Button("New Game", () => {
+
+                this.phase = 3;
+                this.waitTimer = WAIT_TIME;
                 this.errorTimer = 0;
+                /*
+                
                 ev.tr.activate(true, 0.5, ...BG_COLOR,
                 () => {
                     ev.tr.speed = 2.0;
                     ev.changeScene("game", 0);
                 }
-            );
+                );*/
             }),
             new Button("Continue", () => {
                 this.errorTimer = 0;
-                ev.tr.activate(true, 1.0, ...BG_COLOR,
+                ev.tr.activate(true, 2.0, ...BG_COLOR,
                     () => {
-                        ev.tr.speed = 2.0;
                         ev.changeScene("game");
                     }
                 );
@@ -72,11 +87,20 @@ export class TitleScreen {
 
         // Scaling
         this.scale = 1.0;
-        // Alpha for logo, menu etc
-        this.alpha = 1.0;
-    
+
         // Create logo
         this.bmpLogo = this.createLogo(c);
+
+        // EGGS!
+        this.eggs = new Array(EGG_COUNT);
+        for (let i = 0; i < this.eggs.length; ++ i) {
+
+            this.eggs[i] = new Egg(0, 0);
+            this.eggs[i].scale = 1;
+            this.eggs[i].angle = 0;
+            this.eggs[i].follow = 1; // Affects the color
+        }
+        this.eggAngle = 0;
     }
 
 
@@ -127,6 +151,50 @@ export class TitleScreen {
 
 
     //
+    // Update eggs
+    //
+    updateEggs(ev) {
+
+        const ANGLE_SPEED = 0.0125;
+        const ROTATE_SPEED = 0.05;
+        const RADIUS = 480;
+        const START = 3;
+
+        this.eggAngle = (this.eggAngle + ANGLE_SPEED*ev.step) % (Math.PI*2);
+
+        let m = 1.0;
+        if (this.phase == 3)
+            m = this.waitTimer / WAIT_TIME;
+
+        let a;
+        let r;
+        for (let i = 0; i < this.eggs.length; ++ i) {
+
+            a = this.eggAngle + Math.PI*2/this.eggs.length * i;
+            r = m * 1.0 / (this.eggs.length+START) * (i+START);
+            r *= r;
+            a *= 1 - 2 * (i % 2);
+
+            // Set position
+            this.eggs[i].rpos = new Vector2(
+
+                Math.cos(a) * RADIUS * r,
+                Math.sin(a) * RADIUS * r
+            );
+
+            // Set scale
+            this.eggs[i].scale = 3.75 * r;
+
+            // Update angle
+            this.eggs[i].angle = 
+                (this.eggs[i].angle + 
+                ROTATE_SPEED*ev.step * 
+                (-1 + 2 * (i%2))) % (Math.PI*2)
+        }
+    }
+
+
+    //
     // Update scene
     //
     update(ev) {
@@ -136,16 +204,21 @@ export class TitleScreen {
         const VORTEX_SPEED = 0.0125;
 
         let id;
-        this.alpha = 1;
+        let t;
         this.scale = 1;
 
         // Do not check input if transition active
         if (ev.tr.active)  {
 
-            if (ev.tr.fadeIn) {
+            // Update eggs
+            this.updateEggs({step: 0});
 
-                this.alpha = 1.0 - ev.tr.getScaledTime();
-                this.scale = 1.0 + 9*ev.tr.getScaledTime();
+            if (ev.tr.fadeIn && this.phase == 3) {
+
+                t = ev.tr.getScaledTime();
+                t *= t;
+                this.scale = 1.0 + 9*t;
+
             }
             return;
         }
@@ -158,6 +231,9 @@ export class TitleScreen {
             this.vortexTimer -= 1.0;
             this.vphase = (this.vphase+1) % 2;
         }
+
+        // Update eggs
+        this.updateEggs(ev);
 
         // Press enter
         if (this.phase == 0) {
@@ -212,9 +288,8 @@ export class TitleScreen {
                     }
                     else {
 
-                        ev.tr.activate(true, 1.0, ...BG_COLOR,
+                        ev.tr.activate(true, 2.0, ...BG_COLOR,
                             () => {
-                                ev.tr.speed = 2.0;
                                 ev.changeScene("game", id);
                             }
                         );
@@ -225,6 +300,18 @@ export class TitleScreen {
                     this.phase = 1;
                     this.errorTimer = ERR_TIME;
                 }
+            }
+        }
+        // Disappearing stuff
+        else if (this.phase == 3) {
+
+            if ((this.waitTimer -= ev.step) <= 0) {
+
+                ev.tr.activate(true, 0.5, ...BG_COLOR,
+                    () => {
+                        ev.tr.speed = 2.0;
+                        ev.changeScene("game", 0);
+                    });
             }
         }
 
@@ -275,6 +362,13 @@ export class TitleScreen {
             c.pop();
         }
 
+        c.scale(this.scale, this.scale);
+        // Draw eggs
+        for (let e of this.eggs) {
+
+            e.draw(c, true, e.angle, true, e.scale, true, true);
+        }
+
         c.pop();
     }
 
@@ -313,8 +407,6 @@ export class TitleScreen {
         c.toggleTexturing(false);
         this.drawVortex(c);
         c.toggleTexturing(true);
-
-        c.setGlobalAlpha(this.alpha);
 
         // Shift
         c.translate(0, CENTER_SHIFT);
@@ -360,12 +452,15 @@ export class TitleScreen {
                 null, null, null,
                 SHADOW_OFF_2, 0.25, [1, 1, 0.5]);    
         }
+        else if (this.phase == 3) {
 
+            c.setGlobalAlpha(this.waitTimer / WAIT_TIME);
+        }
 
         // Copyright
         c.loadIdentity();
         c.useTransform();
-        c.drawScaledText("(c)2019 Jani Nyk#nen", 
+        c.drawScaledText("$2019 Jani Nyk#nen", 
             mx, c.viewport.y-COPYRIGHT_SCALE+COPYRIGHT_OFF,
             -20, 0, COPYRIGHT_SCALE, COPYRIGHT_SCALE, true,
             null, null, null,

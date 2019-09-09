@@ -579,7 +579,7 @@ export class Game {
                 -24, 0, STORY_FONT_SCALE * s, 
                 STORY_FONT_SCALE * s, true,
                 null, null, null, 
-                8*s, 0.25, [1, 0.75, 0.33]);
+                2*s, 0.25, [1, 0.75, 0.33]);
 
             c.setGlobalAlpha(1);
         }

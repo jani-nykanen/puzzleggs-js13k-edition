@@ -143,8 +143,9 @@ export class Egg extends Movable {
     //
     // Draw
     //
-    draw(c) {
+    draw(c, noShadow, angle, center, scale, notransf, noOffline) {
 
+        const EPS = 0.01;
         const BASE_OFF = -8;
         const OUTLINE = [6, 3, 0];
         const OFF_X = [0, 0, -2, -6];
@@ -163,30 +164,42 @@ export class Egg extends Movable {
         const SHADOW_OFF = RADIUS+2;
         const SHADOW_ALPHA = 0.25;
 
-        let mx = this.rpos.x + Tile.Width/2;
-        let my = this.rpos.y + Tile.Height/2 + BASE_OFF;
+        if (!this.exist || (scale && scale < EPS)) return;
+
+        let mx = this.rpos.x
+             + (notransf ? 0 : Tile.Width/2);
+        let my = this.rpos.y
+             + (notransf ? 0 : Tile.Height/2) 
+            + (center ? 0 : BASE_OFF);
         let color = this.follow ? COLOR1 : COLOR2;
 
-        if (!this.exist) return;
+        if (angle == null) angle = 0.0;
+        if (scale == null) scale = 1.0;
 
         if (this.dying) {
 
             c.setGlobalAlpha(this.deathTimer/MOVE_TIME);
         }
 
-        // Draw shadow
-        c.setColor(0, 0, 0, SHADOW_ALPHA);
-        c.fillShape(Shape.Ellipse, 
-            mx, my + SHADOW_OFF,
-            SHADOW_WIDTH/2, SHADOW_HEIGHT/2 );
+        if (!noShadow) {
+
+            // Draw shadow
+            c.setColor(0, 0, 0, SHADOW_ALPHA);
+            c.fillShape(Shape.Ellipse, 
+                mx, my + SHADOW_OFF,
+                SHADOW_WIDTH/2, SHADOW_HEIGHT/2 );
+        }
 
         c.push();
         c.translate(mx, my);
-        c.rotate(Math.sin(this.shakeTimer * Math.PI) * Math.PI / 6.0);
+        c.rotate(angle +
+            Math.sin(this.shakeTimer * Math.PI) * 
+            Math.PI / 6.0);
+        c.scale(scale, scale);
         c.useTransform();
 
         // Draw outline & base shape
-        for (let i = 0; i < 3; ++ i) {
+        for (let i = noOffline ? 1 : 0; i < 3; ++ i) {
 
             c.setColor( ...color[i]);
             c.fillShape(Shape.Egg, 

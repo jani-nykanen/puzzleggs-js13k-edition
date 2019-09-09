@@ -238,7 +238,12 @@ export class Canvas extends Transform {
             // Black background
             c.fillStyle = "#000000";
 
-            str = i == 35 ? String.fromCharCode(228) : String.fromCharCode(i);
+            str = String.fromCharCode(i);
+            if (i == 35) 
+                str = String.fromCharCode(228);
+            else if (i == 36) 
+                str = String.fromCharCode(169);
+            
 
             for (let m = -OUTLINE; m <= OUTLINE; ++ m) {
 
